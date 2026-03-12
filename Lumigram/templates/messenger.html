@@ -313,13 +313,23 @@
   .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#333; color:white; padding:10px 22px; border-radius:20px; font-size:13px; font-weight:500; z-index:999; transition:transform 0.3s; }
   .toast.show { transform:translateX(-50%) translateY(0); }
 
-  @media(max-width:768px) {
-    .messenger-layout { grid-template-columns:1fr; }
-    .right-panel { display:none; }
-    .right-panel.mobile-open { display:flex; position:fixed; inset:0; top:60px; z-index:50; }
-    .left-panel.mobile-hide { display:none; }
-    .translate-header-wrap { display:none; }
+ @media(max-width:768px) {
+  .messenger-layout { grid-template-columns:1fr; }
+  .right-panel { display:none; }
+  .right-panel.mobile-open { 
+    display:flex; 
+    position:fixed; 
+    inset:0; 
+    top:60px; 
+    z-index:50; 
   }
+  .left-panel.mobile-hide { display:none; }
+
+  /* keep translate dropdown visible */
+  .translate-header-wrap {
+    display:flex;
+  }
+}
 </style>
 </head>
 <body>
