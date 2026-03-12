@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-bz6s8i5+q+y-2c=^9ux(-++r@+_zxmd9^kc-81toxo0yws)loh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lumigram.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
