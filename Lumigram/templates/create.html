@@ -1,0 +1,327 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Post — Lumigram</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #f0ece4;
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #1e1e1e;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #0a0a0a;
+    }
+    .topbar-title { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .topbar a { color: #888; text-decoration: none; font-size: 13px; }
+
+    .container { max-width: 480px; margin: 0 auto; padding: 20px 16px 80px; }
+
+    .upload-zone {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 2px dashed #2a2a2a;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+      overflow: hidden;
+      background: #111;
+    }
+    .upload-zone:hover     { border-color: #ff4757; background: #130a0b; }
+    .upload-zone.drag-over { border-color: #ff4757; background: rgba(255,71,87,.1); }
+    .upload-zone .icon     { font-size: 48px; margin-bottom: 10px; }
+    .upload-zone .label    { font-size: 13px; color: #555; }
+
+    #fileInput { display: none; }
+
+    #previewImg {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter .35s ease;
+    }
+
+    #activeBadge {
+      display: none;
+      position: absolute;
+      bottom: 10px; right: 10px;
+      background: rgba(0,0,0,.65);
+      color: #ff4757;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #555;
+      margin: 20px 0 10px;
+    }
+
+    #filterStrip {
+      display: none;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+    #filterStrip::-webkit-scrollbar { display: none; }
+
+    .filter-thumb {
+      display: inline-block;
+      margin-right: 10px;
+      cursor: pointer;
+      text-align: center;
+      vertical-align: top;
+      transition: transform .15s;
+    }
+    .filter-thumb:hover { transform: scale(1.05); }
+    .filter-thumb img {
+      width: 72px; height: 72px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid transparent;
+      transition: border-color .2s;
+      display: block;
+    }
+    .filter-thumb img.active { border-color: #ff4757; }
+    .filter-thumb .fname {
+      font-size: 9px; color: #666;
+      margin-top: 5px; letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+    .filter-thumb.active .fname { color: #ff4757; }
+
+    textarea {
+      width: 100%;
+      min-height: 80px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #f0ece4;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+    }
+    textarea:focus { border-color: #ff4757; }
+
+    .btn-post {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-post:disabled { opacity: .4; cursor: not-allowed; }
+
+    .error { color: #ff4757; font-size: 13px; margin-bottom: 12px; }
+
+    #filterCanvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="topbar-title">New Post</span>
+    <a href="{% url 'feed' %}">Cancel</a>
+  </div>
+
+  <div class="container">
+
+    {% if error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <div class="upload-zone" id="uploadZone">
+      <img id="previewImg" alt="preview" />
+      <span id="activeBadge"></span>
+      <div id="placeholder">
+        <div class="icon">📷</div>
+        <div class="label">Tap to upload a photo</div>
+      </div>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" />
+
+    <p class="section-label" id="filterLabel" style="display:none;">Choose a filter</p>
+    <div id="filterStrip"></div>
+
+    <form method="POST" enctype="multipart/form-data" id="postForm">
+      {% csrf_token %}
+      <input type="hidden" name="filtered_image" id="filteredImageData" />
+      <input type="hidden" name="filter_name"    id="filterNameInput" value="Normal" />
+
+      <p class="section-label">Caption</p>
+      <textarea name="caption" placeholder="Write a caption…"></textarea>
+
+      <button type="submit" class="btn-post" id="submitBtn" disabled>
+        Share Post
+      </button>
+    </form>
+
+    <canvas id="filterCanvas"></canvas>
+
+  </div>
+
+  <script>
+  const FILTERS = [
+    { name: 'Normal',    css: 'none' },
+    { name: 'Clarendon', css: 'brightness(1.2) contrast(1.25) saturate(1.35)' },
+    { name: 'Gingham',   css: 'brightness(1.05) hue-rotate(350deg) contrast(0.9) sepia(0.1)' },
+    { name: 'Moon',      css: 'grayscale(1) brightness(1.1) contrast(1.1)' },
+    { name: 'Lark',      css: 'brightness(1.15) contrast(0.9) saturate(1.1) sepia(0.1)' },
+    { name: 'Reyes',     css: 'sepia(0.35) brightness(1.1) contrast(0.9) saturate(0.85)' },
+    { name: 'Juno',      css: 'saturate(1.4) contrast(1.1) brightness(1.05) hue-rotate(5deg)' },
+    { name: 'Slumber',   css: 'brightness(0.85) saturate(0.8) contrast(1.1) sepia(0.2)' },
+    { name: 'Crema',     css: 'sepia(0.2) brightness(1.05) contrast(0.95) saturate(0.9)' },
+    { name: 'Ludwig',    css: 'brightness(1.05) contrast(1.05) saturate(1.1)' },
+    { name: 'Aden',      css: 'hue-rotate(20deg) brightness(1.15) saturate(0.85) contrast(0.9)' },
+    { name: 'Perpetua',  css: 'brightness(1.05) contrast(1.1) saturate(1.1) sepia(0.05)' },
+  ];
+
+  let originalDataURL = null;
+  let selectedIndex   = 0;
+
+  const uploadZone        = document.getElementById('uploadZone');
+  const fileInput         = document.getElementById('fileInput');
+  const previewImg        = document.getElementById('previewImg');
+  const placeholder       = document.getElementById('placeholder');
+  const filterStrip       = document.getElementById('filterStrip');
+  const filterLabel       = document.getElementById('filterLabel');
+  const filteredImageData = document.getElementById('filteredImageData');
+  const filterNameInput   = document.getElementById('filterNameInput');
+  const submitBtn         = document.getElementById('submitBtn');
+  const activeBadge       = document.getElementById('activeBadge');
+  const canvas            = document.getElementById('filterCanvas');
+  const ctx               = canvas.getContext('2d');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', ()=> uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('drag-over');
+    loadFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+
+  function loadFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      originalDataURL = ev.target.result;
+      showPreview();
+      buildFilterStrip();
+      enableSubmit();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showPreview() {
+    previewImg.src            = originalDataURL;
+    previewImg.style.display  = 'block';
+    placeholder.style.display = 'none';
+    activeBadge.style.display = 'block';
+    activeBadge.textContent   = 'Normal';
+    filterStrip.style.display = 'block';
+    filterLabel.style.display = 'block';
+    applyFilterCSS(0);
+  }
+
+  function buildFilterStrip() {
+    filterStrip.innerHTML = '';
+    FILTERS.forEach((f, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'filter-thumb' + (i === 0 ? ' active' : '');
+      wrap.innerHTML = `
+        <img src="${originalDataURL}" id="thumb_${i}"
+             class="${i === 0 ? 'active' : ''}"
+             style="filter:${f.css === 'none' ? 'none' : f.css}"
+             alt="${f.name}" />
+        <div class="fname">${f.name}</div>
+      `;
+      wrap.addEventListener('click', () => selectFilter(i));
+      filterStrip.appendChild(wrap);
+    });
+  }
+
+  function selectFilter(index) {
+    const oldWrap  = filterStrip.children[selectedIndex];
+    const oldThumb = document.getElementById(`thumb_${selectedIndex}`);
+    if (oldWrap)  oldWrap.classList.remove('active');
+    if (oldThumb) oldThumb.classList.remove('active');
+
+    selectedIndex = index;
+
+    const newWrap  = filterStrip.children[index];
+    const newThumb = document.getElementById(`thumb_${index}`);
+    if (newWrap)  newWrap.classList.add('active');
+    if (newThumb) newThumb.classList.add('active');
+
+    applyFilterCSS(index);
+    bakeFilter(index);
+  }
+
+  function applyFilterCSS(index) {
+    const f = FILTERS[index];
+    previewImg.style.filter = f.css === 'none' ? '' : f.css;
+    filterNameInput.value   = f.name;
+    activeBadge.textContent = f.name;
+  }
+
+  function bakeFilter(index) {
+    const f   = FILTERS[index];
+    const img = new Image();
+    img.onload = () => {
+      canvas.width  = img.width;
+      canvas.height = img.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.filter = f.css === 'none' ? 'none' : f.css;
+      ctx.drawImage(img, 0, 0);
+      filteredImageData.value = canvas.toDataURL('image/jpeg', 0.92);
+    };
+    img.src = originalDataURL;
+  }
+
+  function enableSubmit() {
+    submitBtn.disabled = false;
+    bakeFilter(0);
+  }
+  </script>
+
+</body>
+</html>

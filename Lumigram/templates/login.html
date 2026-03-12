@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumigram · Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gradient: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    --blue: #0095f6;
+    --blue-dark: #1877f2;
+    --border: #dbdbdb;
+    --bg: #fafafa;
+    --white: #fff;
+    --text: #262626;
+    --muted: #8e8e8e;
+    --red: #ed4956;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  /* ── PHONE MOCKUP (desktop only) ── */
+  .page-wrap {
+    display:flex;
+    align-items:center;
+    gap:32px;
+    width:100%;
+    max-width:900px;
+  }
+
+  .phone-mockup {
+    width:280px; flex-shrink:0;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .phone-frame {
+    width:230px; height:400px;
+    border:3px solid #262626;
+    border-radius:36px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.15);
+    background:#fff;
+  }
+  .phone-notch {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:80px; height:22px;
+    background:#262626; border-radius:0 0 16px 16px; z-index:2;
+  }
+  .phone-screen {
+    width:100%; height:100%;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  .phone-post {
+    width:100%; flex-shrink:0;
+    animation:slideUp 8s ease-in-out infinite;
+  }
+  @keyframes slideUp {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-50%); }
+  }
+  .phone-post-header {
+    display:flex; align-items:center; gap:8px; padding:10px;
+    border-bottom:1px solid #efefef;
+  }
+  .phone-avatar {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--gradient); padding:2px;
+    flex-shrink:0;
+  }
+  .phone-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; display:block; }
+  .phone-username { font-size:11px; font-weight:600; }
+  .phone-img { width:100%; aspect-ratio:1; background:linear-gradient(135deg,#f093fb,#f5576c); }
+  .phone-img-2 { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+  .phone-img-3 { background:linear-gradient(135deg,#43e97b,#38f9d7); }
+  .phone-actions { padding:8px 10px; display:flex; gap:12px; }
+  .phone-action-icon { font-size:16px; }
+  .phone-likes { font-size:10px; font-weight:600; padding:0 10px; }
+  .phone-caption { font-size:9px; padding:2px 10px 10px; color:var(--muted); line-height:1.4; }
+
+  @media(max-width:768px) { .phone-mockup { display:none; } }
+
+  /* ── MAIN CARD AREA ── */
+  .card-area {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; gap:12px;
+    max-width:350px; width:100%;
+  }
+
+  /* Login card */
+  .login-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:40px 40px 24px;
+    width:100%;
+    display:flex; flex-direction:column; align-items:center; gap:0;
+  }
+
+  /* Logo */
+  .logo {
+    font-family:'Grand Hotel',cursive;
+    font-size:48px;
+    background:var(--gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:28px;
+    line-height:1;
+  }
+
+  /* Form */
+  .form { width:100%; display:flex; flex-direction:column; gap:6px; }
+
+  .input-field {
+    width:100%;
+    background:#fafafa;
+    border:1px solid var(--border);
+    border-radius:3px;
+    padding:9px 8px 7px;
+    font-size:12px;
+    font-family:'DM Sans',sans-serif;
+    color:var(--text);
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  .input-field:focus { border-color:#a8a8a8; background:#fff; }
+  .input-field::placeholder { color:var(--muted); font-size:12px; }
+
+  .input-wrap { position:relative; width:100%; }
+  .toggle-pw {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer;
+    font-size:12px; font-weight:600; color:var(--text);
+    font-family:'DM Sans',sans-serif;
+  }
+
+  .login-btn {
+    width:100%; margin-top:8px;
+    background:var(--blue); color:white;
+    border:none; border-radius:8px;
+    padding:8px;
+    font-size:14px; font-weight:600;
+    font-family:'DM Sans',sans-serif;
+    cursor:pointer;
+    transition:opacity 0.2s;
+  }
+  .login-btn:hover { opacity:0.85; }
+  .login-btn:disabled { opacity:0.5; cursor:default; }
+  .login-btn.loading { opacity:0.7; }
+
+  /* OR divider */
+  .or-divider {
+    display:flex; align-items:center; gap:16px;
+    width:100%; margin:16px 0 16px;
+  }
+  .or-divider::before, .or-divider::after {
+    content:''; flex:1; height:1px; background:var(--border);
+  }
+  .or-divider span { font-size:13px; font-weight:600; color:var(--muted); }
+
+  /* Demo login */
+  .demo-btn {
+    width:100%; background:none;
+    border:1px solid var(--border); border-radius:8px;
+    padding:8px; font-size:13px;
+    font-family:'DM Sans',sans-serif;
+    font-weight:500; color:var(--blue);
+    cursor:pointer; transition:background 0.15s;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .demo-btn:hover { background:var(--bg); }
+
+  /* Error */
+  .error-msg {
+    width:100%; background:#fff0f0;
+    border:1px solid #ffcccc; border-radius:6px;
+    padding:10px 14px; font-size:13px; color:var(--red);
+    display:none; text-align:center; margin-top:6px;
+  }
+  .error-msg.show { display:block; }
+
+  /* Forgot */
+  .forgot-link {
+    font-size:12px; color:var(--blue);
+    text-decoration:none; margin-top:12px; display:block; text-align:center;
+  }
+  .forgot-link:hover { text-decoration:underline; }
+
+  /* Signup card */
+  .signup-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:20px;
+    width:100%;
+    text-align:center;
+    font-size:14px;
+    color:var(--text);
+  }
+  .signup-card a { color:var(--blue); font-weight:600; text-decoration:none; }
+  .signup-card a:hover { text-decoration:underline; }
+
+  /* App store badges */
+  .app-links {
+    text-align:center; margin-top:16px;
+    display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .app-links p { font-size:13px; color:var(--text); }
+  .app-badges { display:flex; gap:8px; }
+  .app-badge {
+    border:1px solid #262626; border-radius:6px;
+    padding:5px 14px; font-size:12px; font-weight:600;
+    color:var(--text); text-decoration:none;
+    display:flex; align-items:center; gap:6px;
+    transition:background 0.15s;
+  }
+  .app-badge:hover { background:#f0f0f0; }
+
+  /* Spinner inside button */
+  .btn-spinner {
+    display:inline-block; width:14px; height:14px;
+    border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff; border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-right:6px;
+  }
+  @keyframes spin { to{transform:rotate(360deg);} }
+
+  footer {
+    margin-top:48px; text-align:center;
+    font-size:12px; color:var(--muted);
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px 16px;
+  }
+  footer a { color:var(--muted); text-decoration:none; }
+  footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- Phone mockup (desktop) -->
+  <div class="phone-mockup">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="phone-post">
+          <!-- Post 1 -->
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=zain" alt=""></div>
+            <div class="phone-username">zain_official</div>
+          </div>
+          <div class="phone-img"></div>
+          <div class="phone-actions"><span class="phone-action-icon">❤️</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">1,204 likes</div>
+          <div class="phone-caption">Beautiful day in Mysore 🌅 #lumigram #photography</div>
+          <!-- Post 2 -->
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=jhon" alt=""></div>
+            <div class="phone-username">jhon_doe</div>
+          </div>
+          <div class="phone-img phone-img-2"></div>
+          <div class="phone-actions"><span class="phone-action-icon">🤍</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">892 likes</div>
+          <div class="phone-caption">Golden hour vibes ✨ #lumigram #sunset</div>
+          <!-- Post 3 -->
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sara" alt=""></div>
+            <div class="phone-username">sara_creates</div>
+          </div>
+          <div class="phone-img phone-img-3"></div>
+          <div class="phone-actions"><span class="phone-action-icon">❤️</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">3,401 likes</div>
+          <div class="phone-caption">Nature therapy 🌿 #lumigram #nature</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card area -->
+  <div class="card-area">
+
+    <!-- Login card -->
+    <div class="login-card">
+      <div class="logo">Lumigram</div>
+
+      <div class="form" id="login-form">
+        <input class="input-field" type="text" id="username" placeholder="Phone number, username, or email" autocomplete="username">
+        <div class="input-wrap">
+          <input class="input-field" type="password" id="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="toggle-pw" type="button" onclick="togglePw()" id="toggle-pw-btn">Show</button>
+        </div>
+        <button class="login-btn" id="login-btn" onclick="doLogin()">Log in</button>
+        <div class="error-msg" id="error-msg">Sorry, your password was incorrect. Please double-check your password.</div>
+      </div>
+
+      <div class="or-divider"><span>OR</span></div>
+
+      <button class="demo-btn" onclick="demoLogin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Continue as Demo User
+      </button>
+
+      <a class="forgot-link" href="#">Forgot password?</a>
+    </div>
+
+    <!-- Sign up card -->
+    <div class="signup-card">
+      Don't have an account? <a href="/register/">Sign up</a>
+    </div>
+
+    <!-- App links -->
+    <div class="app-links">
+      <p>Get the app.</p>
+      <div class="app-badges">
+        <a class="app-badge" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+        <a class="app-badge" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-12.6L13.65 8.3 3.18 23.76zm17.37-11.1L17.79 11l-3.12 3.12 3.12 3.12 2.79-1.62c.8-.46.8-1.68-.03-2.16zM2.13.89C1.96 1.11 1.86 1.4 1.86 1.75v20.5c0 .35.1.64.27.86l.09.09L13.56 12 2.22.8l-.09.09zm11.52 11.11L2.31.76l-.09.09 11.43 11.15z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <a href="#">Meta</a><a href="#">About</a><a href="#">Blog</a>
+  <a href="#">Jobs</a><a href="#">Help</a><a href="#">API</a>
+  <a href="#">Privacy</a><a href="#">Terms</a>
+  <span>© 2026 Lumigram</span>
+</footer>
+
+<script>
+  const BASE = '';
+
+  function getCookie(name) {
+    for (let c of document.cookie.split(';')) {
+      const [k,v] = c.trim().split('=');
+      if (k === name) return decodeURIComponent(v);
+    }
+    return null;
+  }
+
+  function togglePw() {
+    const pw = document.getElementById('password');
+    const btn = document.getElementById('toggle-pw-btn');
+    if (pw.type === 'password') { pw.type = 'text'; btn.textContent = 'Hide'; }
+    else { pw.type = 'password'; btn.textContent = 'Show'; }
+  }
+
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('login-btn');
+    const err = document.getElementById('error-msg');
+
+    if (!username || !password) {
+      err.textContent = 'Please enter your username and password.';
+      err.classList.add('show');
+      return;
+    }
+
+    err.classList.remove('show');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner"></span>Logging in…';
+
+    try {
+      const res = await fetch('/api/accounts/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+
+      if (res.ok) {
+        btn.innerHTML = '✓ Success!';
+        btn.style.background = '#26d679';
+        setTimeout(() => window.location.href = '/', 600);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        err.textContent = data.detail || data.non_field_errors?.[0] || 'Incorrect username or password.';
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'Log in';
+      }
+    } catch(e) {
+      err.textContent = 'Network error. Please try again.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Log in';
+    }
+  }
+
+  async function demoLogin() {
+    document.getElementById('username').value = 'zain';
+    document.getElementById('password').value = 'Zain@1234567';
+    await doLogin();
+  }
+
+  // Check if already logged in — redirect to home
+  async function checkAuth() {
+    try {
+      const r = await fetch('/api/accounts/profile/zain/', { credentials: 'include' });
+      if (r.ok) window.location.href = '/';
+    } catch(e) {}
+  }
+  checkAuth();
+</script>
+</body>
+</html>

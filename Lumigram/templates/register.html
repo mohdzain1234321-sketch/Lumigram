@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumigram · Sign Up</title>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gradient: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    --blue: #0095f6;
+    --blue-dark: #1877f2;
+    --border: #dbdbdb;
+    --bg: #fafafa;
+    --white: #fff;
+    --text: #262626;
+    --muted: #8e8e8e;
+    --red: #ed4956;
+    --green: #26d679;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'DM Sans',sans-serif;
+    background:var(--bg);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  /* ── PHONE MOCKUP ── */
+  .page-wrap {
+    display:flex;
+    align-items:center;
+    gap:32px;
+    width:100%;
+    max-width:900px;
+  }
+  .phone-mockup {
+    width:280px; flex-shrink:0;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .phone-frame {
+    width:230px; height:400px;
+    border:3px solid #262626;
+    border-radius:36px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.15);
+    background:#fff;
+  }
+  .phone-notch {
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:80px; height:22px;
+    background:#262626; border-radius:0 0 16px 16px; z-index:2;
+  }
+  .phone-screen {
+    width:100%; height:100%;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+  }
+  .phone-post { width:100%; flex-shrink:0; animation:slideUp 8s ease-in-out infinite; }
+  @keyframes slideUp {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-50%); }
+  }
+  .phone-post-header {
+    display:flex; align-items:center; gap:8px; padding:10px;
+    border-bottom:1px solid #efefef;
+  }
+  .phone-avatar {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--gradient); padding:2px; flex-shrink:0;
+  }
+  .phone-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; display:block; }
+  .phone-username { font-size:11px; font-weight:600; }
+  .phone-img { width:100%; aspect-ratio:1; background:linear-gradient(135deg,#f093fb,#f5576c); }
+  .phone-img-2 { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+  .phone-img-3 { background:linear-gradient(135deg,#43e97b,#38f9d7); }
+  .phone-actions { padding:8px 10px; display:flex; gap:12px; }
+  .phone-action-icon { font-size:16px; }
+  .phone-likes { font-size:10px; font-weight:600; padding:0 10px; }
+  .phone-caption { font-size:9px; padding:2px 10px 10px; color:var(--muted); line-height:1.4; }
+  @media(max-width:768px) { .phone-mockup { display:none; } }
+
+  /* ── CARD AREA ── */
+  .card-area {
+    flex:1; display:flex; flex-direction:column;
+    align-items:center; gap:12px;
+    max-width:350px; width:100%;
+  }
+
+  .register-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:32px 40px 24px;
+    width:100%;
+    display:flex; flex-direction:column; align-items:center;
+  }
+
+  .logo {
+    font-family:'Grand Hotel',cursive;
+    font-size:48px;
+    background:var(--gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+    margin-bottom:12px;
+    line-height:1;
+  }
+
+  .tagline {
+    font-size:17px; font-weight:600;
+    color:var(--muted);
+    text-align:center;
+    margin-bottom:20px;
+    line-height:1.4;
+  }
+
+  .divider {
+    display:flex; align-items:center; gap:16px;
+    width:100%; margin-bottom:16px;
+  }
+  .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .divider span { font-size:13px; font-weight:600; color:var(--muted); }
+
+  .form { width:100%; display:flex; flex-direction:column; gap:6px; }
+
+  .input-field {
+    width:100%;
+    background:#fafafa;
+    border:1px solid var(--border);
+    border-radius:3px;
+    padding:9px 8px 7px;
+    font-size:12px;
+    font-family:'DM Sans',sans-serif;
+    color:var(--text);
+    outline:none;
+    transition:border-color 0.2s;
+  }
+  .input-field:focus { border-color:#a8a8a8; background:#fff; }
+  .input-field::placeholder { color:var(--muted); font-size:12px; }
+  .input-field.error-field { border-color:var(--red); }
+  .input-field.success-field { border-color:var(--green); }
+
+  .input-wrap { position:relative; width:100%; }
+  .toggle-pw {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer;
+    font-size:12px; font-weight:600; color:var(--text);
+    font-family:'DM Sans',sans-serif;
+  }
+
+  .field-hint {
+    font-size:11px; color:var(--muted);
+    padding:2px 2px 4px;
+    display:none;
+  }
+  .field-hint.show { display:block; }
+  .field-hint.err { color:var(--red); }
+  .field-hint.ok { color:var(--green); }
+
+  .register-btn {
+    width:100%; margin-top:8px;
+    background:var(--blue); color:white;
+    border:none; border-radius:8px;
+    padding:8px;
+    font-size:14px; font-weight:600;
+    font-family:'DM Sans',sans-serif;
+    cursor:pointer;
+    transition:opacity 0.2s;
+  }
+  .register-btn:hover { opacity:0.85; }
+  .register-btn:disabled { opacity:0.5; cursor:default; }
+
+  .terms {
+    font-size:12px; color:var(--muted);
+    text-align:center; margin-top:14px; line-height:1.5;
+  }
+  .terms a { color:var(--muted); font-weight:600; text-decoration:none; }
+  .terms a:hover { text-decoration:underline; }
+
+  .error-msg {
+    width:100%; background:#fff0f0;
+    border:1px solid #ffcccc; border-radius:6px;
+    padding:10px 14px; font-size:13px; color:var(--red);
+    display:none; text-align:center; margin-top:6px;
+  }
+  .error-msg.show { display:block; }
+
+  .success-msg {
+    width:100%; background:#f0fff6;
+    border:1px solid #b2f5d4; border-radius:6px;
+    padding:10px 14px; font-size:13px; color:#1a7a4a;
+    display:none; text-align:center; margin-top:6px;
+  }
+  .success-msg.show { display:block; }
+
+  /* Login card */
+  .login-card {
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:20px;
+    width:100%;
+    text-align:center;
+    font-size:14px;
+    color:var(--text);
+  }
+  .login-card a { color:var(--blue); font-weight:600; text-decoration:none; }
+  .login-card a:hover { text-decoration:underline; }
+
+  /* App links */
+  .app-links {
+    text-align:center; margin-top:16px;
+    display:flex; flex-direction:column; gap:12px; align-items:center;
+  }
+  .app-links p { font-size:13px; color:var(--text); }
+  .app-badges { display:flex; gap:8px; }
+  .app-badge {
+    border:1px solid #262626; border-radius:6px;
+    padding:5px 14px; font-size:12px; font-weight:600;
+    color:var(--text); text-decoration:none;
+    display:flex; align-items:center; gap:6px;
+    transition:background 0.15s;
+  }
+  .app-badge:hover { background:#f0f0f0; }
+
+  .btn-spinner {
+    display:inline-block; width:14px; height:14px;
+    border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff; border-radius:50%;
+    animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-right:6px;
+  }
+  @keyframes spin { to{transform:rotate(360deg);} }
+
+  footer {
+    margin-top:48px; text-align:center;
+    font-size:12px; color:var(--muted);
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px 16px;
+  }
+  footer a { color:var(--muted); text-decoration:none; }
+  footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- Phone mockup -->
+  <div class="phone-mockup">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="phone-post">
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=zain" alt=""></div>
+            <div class="phone-username">zain_official</div>
+          </div>
+          <div class="phone-img"></div>
+          <div class="phone-actions"><span class="phone-action-icon">❤️</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">1,204 likes</div>
+          <div class="phone-caption">Beautiful day in Mysore 🌅 #lumigram #photography</div>
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=jhon" alt=""></div>
+            <div class="phone-username">jhon_doe</div>
+          </div>
+          <div class="phone-img phone-img-2"></div>
+          <div class="phone-actions"><span class="phone-action-icon">🤍</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">892 likes</div>
+          <div class="phone-caption">Golden hour vibes ✨ #lumigram #sunset</div>
+          <div class="phone-post-header">
+            <div class="phone-avatar"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=sara" alt=""></div>
+            <div class="phone-username">sara_creates</div>
+          </div>
+          <div class="phone-img phone-img-3"></div>
+          <div class="phone-actions"><span class="phone-action-icon">❤️</span><span class="phone-action-icon">💬</span><span class="phone-action-icon">📤</span></div>
+          <div class="phone-likes">3,401 likes</div>
+          <div class="phone-caption">Nature therapy 🌿 #lumigram #nature</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card area -->
+  <div class="card-area">
+
+    <div class="register-card">
+      <div class="logo">Lumigram</div>
+      <div class="tagline">Sign up to see photos and videos from your friends.</div>
+
+      <div class="divider"><span>OR</span></div>
+
+      <div class="form">
+        <input class="input-field" type="text" id="email" placeholder="Email address" autocomplete="email">
+
+        <input class="input-field" type="text" id="full_name" placeholder="Full Name" autocomplete="name">
+
+        <input class="input-field" type="text" id="username" placeholder="Username" autocomplete="username">
+        <div class="field-hint" id="username-hint"></div>
+
+        <div class="input-wrap">
+          <input class="input-field" type="password" id="password" placeholder="Password" autocomplete="new-password">
+          <button class="toggle-pw" type="button" onclick="togglePw()">Show</button>
+        </div>
+        <div class="field-hint" id="password-hint"></div>
+
+        <div class="input-wrap">
+          <input class="input-field" type="password" id="password2" placeholder="Confirm Password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+          <button class="toggle-pw" type="button" onclick="togglePw2()">Show</button>
+        </div>
+        <div class="field-hint" id="password2-hint"></div>
+
+        <button class="register-btn" id="register-btn" onclick="doRegister()">Sign up</button>
+
+        <div class="error-msg" id="error-msg"></div>
+        <div class="success-msg" id="success-msg"></div>
+      </div>
+
+      <div class="terms">
+        By signing up, you agree to our <a href="#">Terms</a>,
+        <a href="#">Privacy Policy</a> and <a href="#">Cookies Policy</a>.
+      </div>
+    </div>
+
+    <!-- Already have account -->
+    <div class="login-card">
+      Have an account? <a href="/login/">Log in</a>
+    </div>
+
+    <!-- App links -->
+    <div class="app-links">
+      <p>Get the app.</p>
+      <div class="app-badges">
+        <a class="app-badge" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          App Store
+        </a>
+        <a class="app-badge" href="#">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76c.3.17.64.24.99.2l12.6-12.6L13.65 8.3 3.18 23.76zm17.37-11.1L17.79 11l-3.12 3.12 3.12 3.12 2.79-1.62c.8-.46.8-1.68-.03-2.16zM2.13.89C1.96 1.11 1.86 1.4 1.86 1.75v20.5c0 .35.1.64.27.86l.09.09L13.56 12 2.22.8l-.09.09zm11.52 11.11L2.31.76l-.09.09 11.43 11.15z"/></svg>
+          Google Play
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <a href="#">Meta</a><a href="#">About</a><a href="#">Blog</a>
+  <a href="#">Jobs</a><a href="#">Help</a><a href="#">API</a>
+  <a href="#">Privacy</a><a href="#">Terms</a>
+  <span>© 2026 Lumigram</span>
+</footer>
+
+<script>
+  function getCookie(name) {
+    for (let c of document.cookie.split(';')) {
+      const [k,v] = c.trim().split('=');
+      if (k === name) return decodeURIComponent(v);
+    }
+    return null;
+  }
+
+  function togglePw() {
+    const pw = document.getElementById('password');
+    const btn = pw.nextElementSibling;
+    if (pw.type === 'password') { pw.type = 'text'; btn.textContent = 'Hide'; }
+    else { pw.type = 'password'; btn.textContent = 'Show'; }
+  }
+
+  function togglePw2() {
+    const pw = document.getElementById('password2');
+    const btn = pw.nextElementSibling;
+    if (pw.type === 'password') { pw.type = 'text'; btn.textContent = 'Hide'; }
+    else { pw.type = 'password'; btn.textContent = 'Show'; }
+  }
+
+  // Live username validation
+  document.getElementById('username').addEventListener('input', function() {
+    const val = this.value.trim();
+    const hint = document.getElementById('username-hint');
+    if (!val) { hint.className = 'field-hint'; hint.textContent = ''; return; }
+    if (val.length < 3) {
+      hint.className = 'field-hint show err';
+      hint.textContent = 'Username must be at least 3 characters.';
+      this.classList.add('error-field'); this.classList.remove('success-field');
+    } else if (!/^[a-zA-Z0-9._]+$/.test(val)) {
+      hint.className = 'field-hint show err';
+      hint.textContent = 'Only letters, numbers, dots and underscores allowed.';
+      this.classList.add('error-field'); this.classList.remove('success-field');
+    } else {
+      hint.className = 'field-hint show ok';
+      hint.textContent = '✓ Looks good!';
+      this.classList.remove('error-field'); this.classList.add('success-field');
+    }
+  });
+
+  // Live password strength
+  document.getElementById('password').addEventListener('input', function() {
+    const val = this.value;
+    const hint = document.getElementById('password-hint');
+    if (!val) { hint.className = 'field-hint'; hint.textContent = ''; return; }
+    if (val.length < 8) {
+      hint.className = 'field-hint show err';
+      hint.textContent = 'Password must be at least 8 characters.';
+      this.classList.add('error-field'); this.classList.remove('success-field');
+    } else {
+      hint.className = 'field-hint show ok';
+      hint.textContent = '✓ Strong password!';
+      this.classList.remove('error-field'); this.classList.add('success-field');
+    }
+  });
+
+  // Live confirm password check
+  document.getElementById('password2').addEventListener('input', function() {
+    const pw1 = document.getElementById('password').value;
+    const hint = document.getElementById('password2-hint');
+    if (!this.value) { hint.className = 'field-hint'; hint.textContent = ''; return; }
+    if (this.value !== pw1) {
+      hint.className = 'field-hint show err';
+      hint.textContent = 'Passwords do not match.';
+      this.classList.add('error-field'); this.classList.remove('success-field');
+    } else {
+      hint.className = 'field-hint show ok';
+      hint.textContent = '✓ Passwords match!';
+      this.classList.remove('error-field'); this.classList.add('success-field');
+    }
+  });
+
+  async function doRegister() {
+    const email    = document.getElementById('email').value.trim();
+    const fullName = document.getElementById('full_name').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+    const btn      = document.getElementById('register-btn');
+    const err      = document.getElementById('error-msg');
+    const suc      = document.getElementById('success-msg');
+
+    err.classList.remove('show');
+    suc.classList.remove('show');
+
+    // Frontend validation
+    if (!email || !fullName || !username || !password || !password2) {
+      err.textContent = 'Please fill in all fields.';
+      err.classList.add('show'); return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      err.textContent = 'Please enter a valid email address.';
+      err.classList.add('show'); return;
+    }
+    if (username.length < 3 || !/^[a-zA-Z0-9._]+$/.test(username)) {
+      err.textContent = 'Username must be 3+ characters with letters, numbers, dots or underscores only.';
+      err.classList.add('show'); return;
+    }
+    if (password.length < 8) {
+      err.textContent = 'Password must be at least 8 characters.';
+      err.classList.add('show'); return;
+    }
+    if (password !== password2) {
+      err.textContent = 'Passwords do not match.';
+      err.classList.add('show'); return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-spinner"></span>Creating account…';
+
+    try {
+      const res = await fetch('/api/accounts/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username,
+          password,
+          email,
+          first_name: fullName.split(' ')[0],
+          last_name: fullName.split(' ').slice(1).join(' ')
+        })
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        btn.innerHTML = '✓ Account Created!';
+        btn.style.background = '#26d679';
+        suc.textContent = 'Account created successfully! Redirecting to login…';
+        suc.classList.add('show');
+        setTimeout(() => window.location.href = '/login/', 1800);
+      } else {
+        // Show Django validation errors nicely
+        let errorText = '';
+        if (data.username) errorText = 'Username: ' + data.username[0];
+        else if (data.email) errorText = 'Email: ' + data.email[0];
+        else if (data.password) errorText = 'Password: ' + data.password[0];
+        else if (data.non_field_errors) errorText = data.non_field_errors[0];
+        else errorText = 'Registration failed. Please try again.';
+        err.textContent = errorText;
+        err.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'Sign up';
+        btn.style.background = '';
+      }
+    } catch(e) {
+      err.textContent = 'Network error. Please try again.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = 'Sign up';
+    }
+  }
+</script>
+</body>
+</html>

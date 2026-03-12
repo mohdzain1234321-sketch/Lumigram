@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>{% block title %}Instagram Clone{% endblock %}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #fafafa; }
+    nav { background: #fff; border-bottom: 1px solid #ddd;
+          padding: 12px 20px; display: flex;
+          justify-content: space-between; align-items: center; }
+    nav .logo { font-size: 22px; font-weight: bold;
+                background: linear-gradient(45deg, #833ab4, #e1306c, #f77737);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent; }
+    nav a { text-decoration: none; color: #333; margin: 0 12px; }
+    .container { max-width: 900px; margin: 20px auto; padding: 0 16px; }
+    .btn { padding: 8px 16px; border: none; border-radius: 6px;
+           cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #833ab4; color: white; }
+    .btn-secondary { background: #eee; color: #333; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class='logo'>Lumigram</span>
+    <div>
+      <a href='/'>Feed</a>
+      <a href='/reels/'>Reels</a>
+      <a href='/api/accounts/login/'>Login</a>
+    </div>
+  </nav>
+  <div class='container'>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

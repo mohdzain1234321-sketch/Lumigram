@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumigram &middot; Post</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-main:#faf7f2;
+  --card:#ffffff;
+  --rim:rgba(180,148,110,0.18);
+  --rim2:rgba(180,148,110,0.32);
+  --hazel:#8B6914;
+  --hazel2:#c49a45;
+  --brown:#5c3d1e;
+  --tan:#b48a5a;
+  --text:#2c1f0e;
+  --sub:#7a5c3a;
+  --muted:#b8a090;
+  --red:#e05555;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--bg-main);min-height:100vh;font-family:'Nunito',sans-serif;color:var(--text);}
+body{max-width:480px;margin:0 auto;position:relative;}
+
+nav{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:100;height:56px;
+  display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:rgba(250,247,242,0.95);backdrop-filter:blur(24px);border-bottom:1px solid var(--rim);}
+.back-btn{background:none;border:none;cursor:pointer;color:var(--tan);display:flex;align-items:center;
+  padding:6px;border-radius:50%;transition:color 0.2s,background 0.2s;}
+.back-btn:hover{color:var(--brown);background:rgba(180,148,110,0.1);}
+.nav-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:300;font-style:italic;
+  background:linear-gradient(135deg,#8B6914,#c49a45,#8B6914);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;}
+
+.page{padding-top:56px;padding-bottom:80px;}
+
+.spinner-wrap{display:flex;align-items:center;justify-content:center;padding:80px 20px;}
+.spinner::after{content:'';display:inline-block;width:30px;height:30px;border-radius:50%;
+  border:3px solid rgba(139,105,20,0.15);border-top-color:#8B6914;animation:spin 0.75s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.post-card{background:#fff;border-top:1px solid var(--rim);border-bottom:1px solid var(--rim);
+  box-shadow:0 2px 12px rgba(139,105,20,0.07);animation:riseIn 0.4s ease both;}
+@keyframes riseIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+.post-header{display:flex;align-items:center;padding:12px 14px;gap:11px;}
+.post-av-ring{width:40px;height:40px;border-radius:50%;padding:2px;
+  background:conic-gradient(from 0deg,#f0c060,#e8507a,#8e44ad,#2980b9,#f0c060);
+  flex-shrink:0;cursor:pointer;}
+.post-av-inner{width:100%;height:100%;border-radius:50%;padding:2px;overflow:hidden;}
+.post-av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.post-uname{font-weight:700;font-size:13.5px;color:var(--brown);cursor:pointer;}
+.post-uname:hover{color:var(--hazel);}
+.post-time-small{font-size:11px;color:var(--muted);margin-top:1px;}
+
+.post-img-wrap{width:100%;position:relative;overflow:hidden;}
+.post-img-wrap img{width:100%;display:block;max-height:600px;object-fit:cover;}
+.post-img-wrap::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 60%,rgba(8,8,16,0.35) 100%);pointer-events:none;}
+
+.post-actions{display:flex;align-items:center;padding:8px 10px 4px;gap:2px;}
+.act-btn{background:none;border:none;cursor:pointer;color:var(--tan);padding:7px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;transition:color 0.2s,transform 0.15s;}
+.act-btn:hover{color:var(--text);transform:scale(1.12);}
+.act-btn.liked svg{fill:#e05555;stroke:#e05555;}
+.act-save{margin-left:auto;}
+
+.post-likes{padding:2px 16px 5px;font-weight:700;font-size:13px;color:var(--brown);}
+.post-caption{padding:0 16px 8px;font-size:13px;line-height:1.6;color:var(--sub);}
+.cap-user{font-weight:700;color:var(--brown);margin-right:5px;cursor:pointer;}
+.cap-user:hover{color:var(--hazel);}
+.post-date{padding:0 16px 14px;font-family:'DM Mono',monospace;font-size:9.5px;
+  color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+
+.comments-section{padding:0 16px 16px;}
+.comments-title{font-family:'DM Mono',monospace;font-size:9px;color:var(--hazel);
+  letter-spacing:3px;text-transform:uppercase;padding:14px 0 10px;
+  border-top:1px solid var(--rim);}
+.comment-item{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;}
+.comment-av{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.comment-av img{width:100%;height:100%;object-fit:cover;}
+.comment-body{flex:1;}
+.comment-user{font-weight:700;font-size:12.5px;color:var(--brown);margin-right:5px;cursor:pointer;}
+.comment-user:hover{color:var(--hazel);}
+.comment-text{font-size:13px;color:var(--sub);line-height:1.5;}
+.comment-time{font-size:10px;color:var(--muted);margin-top:3px;}
+.no-comments{font-size:13px;color:var(--muted);text-align:center;padding:20px 0;}
+
+.comment-input-row{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-top:1px solid var(--rim);background:#fdf9f4;z-index:50;}
+.my-av{width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.my-av img{width:100%;height:100%;object-fit:cover;}
+.comment-inp{flex:1;border:none;background:none;outline:none;font-size:13px;
+  font-family:'Nunito',sans-serif;color:var(--sub);}
+.comment-inp::placeholder{color:var(--muted);}
+.post-comment-btn{background:none;border:none;cursor:pointer;font-weight:700;font-size:13px;
+  background:linear-gradient(135deg,#3d9cf0,#8e44ad);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;
+  font-family:'Nunito',sans-serif;opacity:0.3;transition:opacity 0.2s;}
+.post-comment-btn.active{opacity:1;}
+
+.error-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.error-state p{font-size:15px;margin-bottom:12px;}
+.go-home{background:linear-gradient(135deg,#8B6914,#c49a45);color:white;border:none;
+  border-radius:12px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;
+  font-family:'Nunito',sans-serif;}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="back-btn" onclick="history.back()">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+  <span class="nav-logo">Post</span>
+</nav>
+
+<div class="page">
+  <div class="spinner-wrap" id="loading"><div class="spinner"></div></div>
+  <div id="post-wrap"></div>
+  <div id="error-wrap" style="display:none">
+    <div class="error-state">
+      <p>Post not found</p>
+      <button class="go-home" onclick="window.location.href='/'">Go Home</button>
+    </div>
+  </div>
+</div>
+
+<div class="comment-input-row" id="comment-bar" style="display:none">
+  <div class="my-av"><img id="my-avatar" src="" alt=""></div>
+  <input class="comment-inp" type="text" placeholder="Add a comment..."
+    id="comment-input" oninput="togglePostBtn(this)">
+  <button class="post-comment-btn" id="post-comment-btn" onclick="postComment()">Post</button>
+</div>
+
+<script>
+var POST_ID = {{ post_id }};
+var currentUser = null;
+var likedState = false;
+var myAvatarSrc = 'https://api.dicebear.com/7.x/avataaars/svg?seed=you';
+
+function getCookie(n) {
+  for (var c of document.cookie.split(';')) {
+    var parts = c.trim().split('=');
+    if (parts[0] === n) return decodeURIComponent(parts[1]);
+  }
+  return null;
+}
+
+function getAvatar(u) {
+  if (u && u.profile && u.profile.photo) return u.profile.photo;
+  return 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (u ? u.username : 'user');
+}
+
+function fmtDate(dt) {
+  return new Date(dt).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}).toUpperCase();
+}
+
+function fmtTime(dt) {
+  var d = new Date(dt), now = new Date(), diff = (now - d) / 1000;
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  return d.toLocaleDateString([], {month:'short', day:'numeric'});
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/\n/g,'<br>');
+}
+
+async function init() {
+  try {
+    var r = await fetch('/api/accounts/me/', {credentials:'include'});
+    if (!r.ok) { window.location.href = '/login/'; return; }
+    currentUser = await r.json();
+    myAvatarSrc = currentUser.profile && currentUser.profile.photo
+      ? currentUser.profile.photo
+      : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + currentUser.username;
+    document.getElementById('my-avatar').src = myAvatarSrc;
+    document.getElementById('comment-bar').style.display = 'flex';
+  } catch(e) {
+    window.location.href = '/login/';
+    return;
+  }
+
+  try {
+    var r2 = await fetch('/api/posts/' + POST_ID + '/detail/', {credentials:'include'});
+    if (!r2.ok) throw new Error('not found');
+    var post = await r2.json();
+    renderPost(post);
+  } catch(e) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-wrap').style.display = 'block';
+  }
+}
+
+function renderPost(post) {
+  document.getElementById('loading').style.display = 'none';
+  likedState = post.is_liked || false;
+  var av = getAvatar(post.author);
+
+  document.getElementById('post-wrap').innerHTML =
+    '<div class="post-card">'
+    + '<div class="post-header">'
+    + '<div class="post-av-ring" onclick="window.location.href=\'/user/' + post.author.username + '/\'">'
+    + '<div class="post-av-inner"><img src="' + av + '" alt=""></div></div>'
+    + '<div style="flex:1">'
+    + '<div class="post-uname" onclick="window.location.href=\'/user/' + post.author.username + '/\'">' + escHtml(post.author.username) + '</div>'
+    + '<div class="post-time-small">' + fmtDate(post.created_at) + '</div>'
+    + '</div></div>'
+
+    + (post.image ? '<div class="post-img-wrap"><img src="' + post.image + '" alt="post"></div>' : '')
+
+    + '<div class="post-actions">'
+    + '<button class="act-btn' + (likedState ? ' liked' : '') + '" id="like-btn" onclick="toggleLike(' + post.id + ')">'
+    + '<svg width="24" height="24" fill="' + (likedState ? '#e05555' : 'none') + '" stroke="' + (likedState ? '#e05555' : 'currentColor') + '" stroke-width="2" viewBox="0 0 24 24">'
+    + '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'
+    + '</svg></button>'
+    + '<button class="act-btn">'
+    + '<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'
+    + '</button>'
+    + '<button class="act-btn act-save" onclick="toggleSave(this)">'
+    + '<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="19 21 12 16 5 21 5 3 19 3 19 21"/></svg>'
+    + '</button></div>'
+
+    + '<div class="post-likes" id="likes-count">' + post.like_count + ' likes</div>'
+    + '<div class="post-caption"><span class="cap-user" onclick="window.location.href=\'/user/' + post.author.username + '/\'">' + escHtml(post.author.username) + '</span>' + escHtml(post.caption || '') + '</div>'
+    + '<div class="post-date">' + fmtDate(post.created_at) + '</div>'
+
+    + '<div class="comments-section">'
+    + '<div class="comments-title">Comments</div>'
+    + '<div id="comments-list">' + renderComments(post.comments || []) + '</div>'
+    + '</div></div>';
+}
+
+function renderComments(comments) {
+  if (!comments.length) return '<div class="no-comments">No comments yet. Be the first!</div>';
+  return comments.map(function(c) {
+    var u = c.user || c.author;
+    var av = getAvatar(u);
+    var username = u ? u.username : 'user';
+    var text = c.content || c.text || '';
+    return '<div class="comment-item">'
+      + '<div class="comment-av"><img src="' + av + '" alt=""></div>'
+      + '<div class="comment-body">'
+      + '<span class="comment-user" onclick="window.location.href=\'/user/' + username + '/\'">' + escHtml(username) + '</span>'
+      + '<span class="comment-text">' + escHtml(text) + '</span>'
+      + '<div class="comment-time">' + fmtTime(c.created_at) + '</div>'
+      + '</div></div>';
+  }).join('');
+}
+
+async function toggleLike(postId) {
+  try {
+    var res = await fetch('/api/posts/' + postId + '/like/', {
+      method: 'POST',
+      headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'},
+      credentials: 'include'
+    });
+    var data = await res.json();
+    likedState = !likedState;
+    document.getElementById('likes-count').textContent = data.like_count + ' likes';
+    var svg = document.getElementById('like-btn').querySelector('svg');
+    svg.style.fill = likedState ? '#e05555' : 'none';
+    svg.style.stroke = likedState ? '#e05555' : 'currentColor';
+  } catch(e) {}
+}
+
+function toggleSave(btn) {
+  var p = btn.querySelector('polygon');
+  var saved = p.getAttribute('fill') === 'currentColor';
+  p.setAttribute('fill', saved ? 'none' : 'currentColor');
+}
+
+function togglePostBtn(inp) {
+  document.getElementById('post-comment-btn').classList.toggle('active', inp.value.trim().length > 0);
+}
+
+async function postComment() {
+  var inp = document.getElementById('comment-input');
+  var text = inp.value.trim();
+  if (!text) return;
+  try {
+    await fetch('/api/posts/' + POST_ID + '/comment/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
+      credentials: 'include',
+      body: JSON.stringify({content: text})
+    });
+    inp.value = '';
+    document.getElementById('post-comment-btn').classList.remove('active');
+    var r = await fetch('/api/posts/' + POST_ID + '/detail/', {credentials:'include'});
+    var post = await r.json();
+    document.getElementById('comments-list').innerHTML = renderComments(post.comments || []);
+  } catch(e) {}
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') history.back();
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumigram · Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gradient: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    --white: #fff;
+    --bg: #fafafa;
+    --border: #dbdbdb;
+    --text: #262626;
+    --muted: #8e8e8e;
+    --blue: #0095f6;
+    --red: #ed4956;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+
+  /* NAVBAR */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:var(--white); border-bottom:1px solid var(--border);
+    height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+  }
+  .nav-logo { font-family:'Grand Hotel',cursive; font-size:26px; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; cursor:pointer; }
+  .nav-center { font-size:16px; font-weight:700; }
+  .nav-icons { display:flex; align-items:center; gap:18px; }
+  .nav-icons svg { cursor:pointer; width:24px; height:24px; }
+  .nav-icons svg:hover { opacity:0.6; }
+  .avatar-nav { width:28px; height:28px; border-radius:50%; overflow:hidden; cursor:pointer; border:2px solid var(--border); }
+  .avatar-nav img { width:100%; height:100%; object-fit:cover; }
+  .nav-back { background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--text); }
+  .nav-back:hover { opacity:0.7; }
+
+  /* LAYOUT */
+  .layout { max-width:935px; margin:0 auto; padding:80px 20px 40px; }
+
+  /* PROFILE HEADER */
+  .profile-header {
+    display:flex; align-items:flex-start; gap:60px;
+    padding-bottom:44px; border-bottom:1px solid var(--border);
+    margin-bottom:24px;
+  }
+
+  .profile-avatar-wrap { flex-shrink:0; }
+  .profile-avatar-ring {
+    width:150px; height:150px; border-radius:50%;
+    background:var(--gradient); padding:3px;
+    cursor:pointer;
+  }
+  .profile-avatar-ring.no-story { background:var(--border); }
+  .profile-avatar-inner {
+    width:100%; height:100%; border-radius:50%;
+    background:var(--white); padding:3px; overflow:hidden;
+  }
+  .profile-avatar-inner img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+  .profile-info { flex:1; }
+  .profile-top-row {
+    display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .profile-username { font-size:20px; font-weight:300; }
+
+  /* Action buttons */
+  .profile-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn-follow {
+    padding:7px 24px; border-radius:8px; font-size:14px; font-weight:600;
+    cursor:pointer; border:none; font-family:'DM Sans',sans-serif;
+    background:var(--blue); color:white; transition:all 0.2s; min-width:100px;
+  }
+  .btn-follow:hover { background:#1877f2; }
+  .btn-follow.following {
+    background:var(--white); color:var(--text);
+    border:1.5px solid var(--border);
+  }
+  .btn-follow.following:hover { background:#ffe0e0; border-color:var(--red); color:var(--red); }
+  .btn-message {
+    padding:7px 24px; border-radius:8px; font-size:14px; font-weight:600;
+    cursor:pointer; border:1.5px solid var(--border);
+    background:var(--white); color:var(--text);
+    font-family:'DM Sans',sans-serif; transition:all 0.2s;
+  }
+  .btn-message:hover { background:var(--bg); border-color:#aaa; }
+  .btn-more {
+    width:36px; height:36px; border-radius:8px;
+    border:1.5px solid var(--border); background:var(--white);
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background 0.2s;
+  }
+  .btn-more:hover { background:var(--bg); }
+
+  /* Stats */
+  .profile-stats {
+    display:flex; gap:40px; margin-bottom:16px;
+  }
+  .stat { text-align:center; cursor:pointer; }
+  .stat strong { display:block; font-size:16px; font-weight:700; }
+  .stat span { font-size:14px; color:var(--text); }
+  .stat:hover span { text-decoration:underline; }
+
+  /* Bio */
+  .profile-bio { font-size:14px; line-height:1.6; }
+  .profile-fullname { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .profile-bio-text { margin-bottom:4px; white-space:pre-line; }
+  .profile-website { color:var(--blue); font-weight:600; font-size:14px; text-decoration:none; }
+  .profile-website:hover { text-decoration:underline; }
+
+  /* PRIVATE ACCOUNT */
+  .private-screen {
+    display:none; flex-direction:column;
+    align-items:center; justify-content:center;
+    padding:60px 20px; text-align:center; gap:16px;
+    border-top:1px solid var(--border);
+  }
+  .private-screen.show { display:flex; }
+  .private-icon {
+    width:64px; height:64px; border-radius:50%;
+    border:2px solid var(--text);
+    display:flex; align-items:center; justify-content:center;
+    font-size:28px;
+  }
+  .private-screen h3 { font-size:18px; font-weight:600; }
+  .private-screen p { color:var(--muted); font-size:14px; max-width:300px; }
+
+  /* TABS */
+  .profile-tabs {
+    display:flex; border-top:1px solid var(--border);
+    margin-bottom:4px;
+  }
+  .profile-tab {
+    flex:1; display:flex; align-items:center; justify-content:center; gap:6px;
+    padding:14px; font-size:12px; font-weight:700; letter-spacing:1px;
+    text-transform:uppercase; cursor:pointer; color:var(--muted);
+    border-top:2px solid transparent; transition:all 0.2s;
+    background:none; border-left:none; border-right:none; border-bottom:none;
+    font-family:'DM Sans',sans-serif;
+  }
+  .profile-tab.active { color:var(--text); border-top-color:var(--text); }
+  .profile-tab svg { width:16px; height:16px; }
+
+  /* POSTS GRID */
+  .posts-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:3px;
+  }
+  .grid-item {
+    position:relative; overflow:hidden; cursor:pointer;
+    background:var(--border); aspect-ratio:1;
+  }
+  .grid-item img {
+    width:100%; height:100%; object-fit:cover; display:block;
+    transition:transform 0.3s;
+  }
+  .grid-item:hover img { transform:scale(1.05); }
+  .grid-overlay {
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0.3);
+    display:flex; align-items:center; justify-content:center; gap:24px;
+    opacity:0; transition:opacity 0.2s;
+  }
+  .grid-item:hover .grid-overlay { opacity:1; }
+  .overlay-stat {
+    display:flex; align-items:center; gap:6px;
+    color:white; font-size:15px; font-weight:700;
+  }
+  .overlay-stat svg { width:18px; height:18px; fill:white; }
+
+  /* EMPTY */
+  .empty-grid {
+    grid-column:1/-1; text-align:center;
+    padding:60px 20px; color:var(--muted);
+  }
+  .empty-grid .icon { font-size:48px; margin-bottom:12px; }
+  .empty-grid h3 { font-size:18px; font-weight:600; color:var(--text); margin-bottom:6px; }
+
+  /* POST MODAL */
+  .post-modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.8); z-index:200;
+    align-items:center; justify-content:center; padding:20px;
+  }
+  .post-modal-overlay.open { display:flex; }
+  .post-modal {
+    background:var(--white); border-radius:12px;
+    max-width:900px; width:100%; max-height:90vh;
+    display:flex; overflow:hidden; animation:modalIn 0.2s ease;
+  }
+  @keyframes modalIn { from{transform:scale(0.94);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .post-modal-img { flex:1; background:#000; display:flex; align-items:center; justify-content:center; }
+  .post-modal-img img { max-width:100%; max-height:85vh; object-fit:contain; }
+  .post-modal-side { width:320px; flex-shrink:0; display:flex; flex-direction:column; border-left:1px solid var(--border); }
+  .modal-header { padding:14px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .modal-avatar { width:36px; height:36px; border-radius:50%; overflow:hidden; background:var(--gradient); padding:2px; }
+  .modal-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; }
+  .modal-username { font-weight:700; font-size:14px; }
+  .modal-close { margin-left:auto; background:none; border:none; cursor:pointer; font-size:22px; color:var(--muted); }
+  .modal-caption { padding:14px 16px; flex:1; overflow-y:auto; font-size:14px; line-height:1.6; }
+  .modal-caption .cap-username { font-weight:700; margin-right:6px; }
+  .modal-actions { padding:12px 16px; border-top:1px solid var(--border); }
+  .modal-likes { font-weight:700; font-size:14px; margin-bottom:4px; }
+  .modal-time { font-size:11px; color:var(--muted); text-transform:uppercase; }
+
+  /* FOLLOWERS MODAL */
+  .followers-modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.5); z-index:300;
+    align-items:center; justify-content:center;
+  }
+  .followers-modal-overlay.open { display:flex; }
+  .followers-modal {
+    background:var(--white); border-radius:12px;
+    width:400px; max-width:95vw; max-height:80vh;
+    display:flex; flex-direction:column; overflow:hidden;
+    animation:modalIn 0.2s ease;
+  }
+  .followers-modal-header {
+    padding:16px 20px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .followers-modal-header h3 { font-size:16px; font-weight:700; }
+  .followers-modal-close { background:none; border:none; cursor:pointer; font-size:22px; color:var(--muted); }
+  .followers-list { overflow-y:auto; flex:1; }
+  .follower-row {
+    display:flex; align-items:center; gap:12px;
+    padding:12px 20px; cursor:pointer; transition:background 0.15s;
+  }
+  .follower-row:hover { background:var(--bg); }
+  .follower-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--gradient); padding:2px; flex-shrink:0; }
+  .follower-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; }
+  .follower-name { font-weight:600; font-size:14px; }
+  .follower-sub { font-size:12px; color:var(--muted); }
+
+  /* SPINNER */
+  .spinner { text-align:center; padding:40px; }
+  .spinner::after { content:''; display:inline-block; width:26px; height:26px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--blue); animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#333; color:white; padding:10px 22px; border-radius:20px; font-size:13px; font-weight:500; z-index:999; transition:transform 0.3s; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  /* MOBILE */
+  @media(max-width:640px) {
+    .profile-header { flex-direction:column; align-items:center; gap:20px; text-align:center; }
+    .profile-avatar-ring { width:100px; height:100px; }
+    .profile-top-row { justify-content:center; }
+    .profile-stats { gap:20px; }
+    .profile-actions { justify-content:center; }
+    .profile-bio { text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <button class="nav-back" onclick="history.back()">
+    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    <span id="nav-username">Profile</span>
+  </button>
+  <div class="nav-logo" onclick="window.location.href='/'">Lumigram</div>
+  <div class="nav-icons">
+    <svg onclick="window.location.href='/'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <svg onclick="window.location.href='/messenger/'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <div class="avatar-nav" onclick="window.location.href='/api/accounts/profile-page/'">
+      <img id="nav-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=me" alt="">
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar-ring" id="avatar-ring">
+        <div class="profile-avatar-inner">
+          <img id="profile-photo" src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="">
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-info">
+      <div class="profile-top-row">
+        <div class="profile-username" id="profile-username">username</div>
+        <div class="profile-actions">
+          <button class="btn-follow" id="follow-btn" onclick="toggleFollow()">Follow</button>
+          <button class="btn-message" onclick="sendMessage()">Message</button>
+          <button class="btn-more" onclick="showToast('More options coming soon')">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="profile-stats">
+        <div class="stat">
+          <strong id="post-count">0</strong>
+          <span>posts</span>
+        </div>
+        <div class="stat" onclick="openFollowersModal('followers')">
+          <strong id="follower-count">0</strong>
+          <span>followers</span>
+        </div>
+        <div class="stat" onclick="openFollowersModal('following')">
+          <strong id="following-count">0</strong>
+          <span>following</span>
+        </div>
+      </div>
+
+      <div class="profile-bio">
+        <div class="profile-fullname" id="profile-fullname"></div>
+        <div class="profile-bio-text" id="profile-bio"></div>
+        <a class="profile-website" id="profile-website" href="#" target="_blank" style="display:none"></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIVATE LOCK -->
+  <div class="private-screen" id="private-screen">
+    <div class="private-icon">🔒</div>
+    <h3>This account is private</h3>
+    <p>Follow this account to see their photos and videos.</p>
+    <button class="btn-follow" style="width:200px" onclick="toggleFollow()">Follow to see posts</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="profile-tabs" id="profile-tabs" style="display:none">
+    <button class="profile-tab active" onclick="showProfileTab('posts')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Posts
+    </button>
+    <button class="profile-tab" onclick="showProfileTab('reels')">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Reels
+    </button>
+  </div>
+
+  <!-- POSTS GRID -->
+  <div id="tab-posts-content">
+    <div class="posts-grid" id="posts-grid">
+      <div class="spinner" style="grid-column:1/-1"></div>
+    </div>
+  </div>
+
+  <!-- REELS GRID -->
+  <div id="tab-reels-content" style="display:none">
+    <div class="posts-grid" id="reels-grid">
+      <div class="spinner" style="grid-column:1/-1"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- POST MODAL -->
+<div class="post-modal-overlay" id="post-modal" onclick="closePostModal(event)">
+  <div class="post-modal">
+    <div class="post-modal-img">
+      <img id="modal-img" src="" alt="">
+    </div>
+    <div class="post-modal-side">
+      <div class="modal-header">
+        <div class="modal-avatar"><img id="modal-av" src="" alt=""></div>
+        <div class="modal-username" id="modal-user"></div>
+        <button class="modal-close" onclick="document.getElementById('post-modal').classList.remove('open')">×</button>
+      </div>
+      <div class="modal-caption">
+        <span class="cap-username" id="modal-cap-user"></span>
+        <span id="modal-cap-text"></span>
+      </div>
+      <div class="modal-actions">
+        <div class="modal-likes" id="modal-likes"></div>
+        <div class="modal-time" id="modal-time"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOLLOWERS MODAL -->
+<div class="followers-modal-overlay" id="followers-modal" onclick="closeFollowersModal(event)">
+  <div class="followers-modal">
+    <div class="followers-modal-header">
+      <h3 id="followers-modal-title">Followers</h3>
+      <button class="followers-modal-close" onclick="document.getElementById('followers-modal').classList.remove('open')">×</button>
+    </div>
+    <div class="followers-list" id="followers-list">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── STATE ─────────────────────────────────────────────────
+  let profileUser   = null;   // the user being viewed
+  let currentUser   = null;   // logged-in user
+  let isFollowing   = false;
+  let userPosts     = [];
+
+  // ── HELPERS ───────────────────────────────────────────────
+  function getCookie(name) {
+    for (let c of document.cookie.split(';')) {
+      const [k,v] = c.trim().split('=');
+      if (k === name) return decodeURIComponent(v);
+    }
+    return null;
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function getAvatar(user) {
+    if (user && user.profile && user.profile.photo) return user.profile.photo;
+    return 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user ? user.username : 'user');
+  }
+
+  function formatCount(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+    return n;
+  }
+
+  function formatTime(dt) {
+    return new Date(dt).toLocaleDateString([], {month:'long', day:'numeric', year:'numeric'});
+  }
+
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── GET USERNAME FROM URL ──────────────────────────────────
+  // URL: /user/<username>/
+  function getUsernameFromURL() {
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    // expects /user/username/
+    if (parts.length >= 2 && parts[0] === 'user') return parts[1];
+    // fallback: query param ?u=username
+    const params = new URLSearchParams(window.location.search);
+    return params.get('u') || params.get('username') || 'zain';
+  }
+
+  // ── INIT ──────────────────────────────────────────────────
+  async function init() {
+    // login
+    try {
+      await fetch('/api/accounts/login/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+        credentials:'include',
+        body:JSON.stringify({username:'zain',password:'Zain@1234567'})
+      });
+    } catch(e) {}
+
+    // load current user
+    try {
+      const r = await fetch('/api/accounts/profile/zain/', {credentials:'include'});
+      currentUser = await r.json();
+      const photo = currentUser.profile && currentUser.profile.photo ? currentUser.profile.photo : null;
+      if (photo) document.getElementById('nav-avatar').src = photo;
+    } catch(e) {}
+
+    const username = getUsernameFromURL();
+    loadProfile(username);
+  }
+
+  // ── LOAD PROFILE ──────────────────────────────────────────
+  async function loadProfile(username) {
+    document.getElementById('nav-username').textContent = username;
+    document.title = 'Lumigram · ' + username;
+
+    try {
+      const r = await fetch('/api/accounts/profile/' + username + '/', {credentials:'include'});
+      profileUser = await r.json();
+      renderProfile(profileUser);
+      loadUserPosts(username);
+    } catch(e) {
+      document.getElementById('posts-grid').innerHTML =
+        '<div class="empty-grid" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>User not found</h3></div>';
+    }
+  }
+
+  // ── RENDER PROFILE ────────────────────────────────────────
+  function renderProfile(user) {
+    // Avatar
+    const photo = getAvatar(user);
+    document.getElementById('profile-photo').src = photo;
+    document.getElementById('modal-av').src = photo;
+
+    // Username
+    document.getElementById('profile-username').textContent = user.username;
+    document.getElementById('nav-username').textContent = user.username;
+
+    // Full name
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ');
+    if (fullName) document.getElementById('profile-fullname').textContent = fullName;
+
+    // Bio
+    if (user.profile && user.profile.bio) {
+      document.getElementById('profile-bio').textContent = user.profile.bio;
+    }
+
+    // Website
+    if (user.profile && user.profile.website) {
+      const w = document.getElementById('profile-website');
+      w.href = user.profile.website;
+      w.textContent = user.profile.website.replace(/^https?:\/\//, '');
+      w.style.display = 'block';
+    }
+
+    // Stats
+    document.getElementById('follower-count').textContent =
+      formatCount(user.profile ? user.profile.follower_count : 0);
+    document.getElementById('following-count').textContent =
+      formatCount(user.profile ? user.profile.following_count : 0);
+
+    // Follow button state — if viewing own profile, hide follow/msg
+    if (currentUser && user.username === currentUser.username) {
+      document.getElementById('follow-btn').style.display = 'none';
+      document.querySelector('.btn-message').style.display = 'none';
+      document.querySelector('.btn-more').style.display = 'none';
+    }
+
+    // Private account
+    if (user.profile && user.profile.is_private) {
+      document.getElementById('private-screen').classList.add('show');
+      document.getElementById('profile-tabs').style.display = 'none';
+      document.getElementById('posts-grid').innerHTML = '';
+    } else {
+      document.getElementById('profile-tabs').style.display = 'flex';
+    }
+  }
+
+  // ── LOAD POSTS ────────────────────────────────────────────
+  async function loadUserPosts(username) {
+    const grid = document.getElementById('posts-grid');
+    try {
+      const r = await fetch('/api/posts/all/', {credentials:'include'});
+      const all = await r.json();
+      userPosts = all.filter(p => p.author && p.author.username === username);
+      document.getElementById('post-count').textContent = formatCount(userPosts.length);
+      renderPostsGrid(userPosts);
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-grid" style="grid-column:1/-1"><div class="icon">⚠️</div><h3>Could not load posts</h3></div>';
+    }
+  }
+
+  function renderPostsGrid(posts) {
+    const grid = document.getElementById('posts-grid');
+    if (!posts.length) {
+      grid.innerHTML = '<div class="empty-grid">'
+        + '<div class="icon">📷</div>'
+        + '<h3>No Posts Yet</h3>'
+        + '<p style="color:var(--muted);font-size:14px">When ' + escHtml(profileUser ? profileUser.username : 'they') + ' shares photos, they\'ll appear here.</p>'
+        + '</div>';
+      return;
+    }
+    const photo = profileUser ? getAvatar(profileUser) : '';
+    grid.innerHTML = posts.map(post =>
+      '<div class="grid-item" onclick=\'openPost(' + JSON.stringify(post).replace(/'/g, "\\'") + ')\'>'
+      + '<img src="' + post.image + '" alt="" loading="lazy">'
+      + '<div class="grid-overlay">'
+      + '<div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+      + formatCount(post.like_count) + '</div>'
+      + '</div></div>'
+    ).join('');
+  }
+
+  // ── TABS ──────────────────────────────────────────────────
+  function showProfileTab(tab) {
+    document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('tab-posts-content').style.display = tab === 'posts' ? 'block' : 'none';
+    document.getElementById('tab-reels-content').style.display = tab === 'reels' ? 'block' : 'none';
+    if (tab === 'reels') loadUserReels();
+  }
+
+  async function loadUserReels() {
+    const grid = document.getElementById('reels-grid');
+    grid.innerHTML = '<div class="spinner" style="grid-column:1/-1"></div>';
+    try {
+      const r = await fetch('/api/reels/', {credentials:'include'});
+      const all = await r.json();
+      const username = getUsernameFromURL();
+      const reels = all.filter(r => r.author && r.author.username === username);
+      if (!reels.length) {
+        grid.innerHTML = '<div class="empty-grid"><div class="icon">🎬</div><h3>No Reels Yet</h3></div>';
+        return;
+      }
+      grid.innerHTML = reels.map(reel =>
+        '<div class="grid-item" onclick="showToast(\'Opening reel…\')">'
+        + '<video src="' + reel.video + '" muted loop preload="none" style="width:100%;height:100%;object-fit:cover;"></video>'
+        + '<div class="grid-overlay">'
+        + '<div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+        + formatCount(reel.like_count) + '</div>'
+        + '</div></div>'
+      ).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty-grid"><div class="icon">⚠️</div><h3>Could not load reels</h3></div>';
+    }
+  }
+
+  // ── FOLLOW ────────────────────────────────────────────────
+  async function toggleFollow() {
+    if (!profileUser) return;
+    const btn = document.getElementById('follow-btn');
+    try {
+      await fetch('/api/accounts/follow/' + profileUser.username + '/', {
+        method:'POST',
+        headers:{'X-CSRFToken':getCookie('csrftoken')},
+        credentials:'include'
+      });
+    } catch(e) {}
+
+    isFollowing = !isFollowing;
+    if (isFollowing) {
+      btn.textContent = 'Following ✓';
+      btn.classList.add('following');
+      // update follower count
+      const fc = document.getElementById('follower-count');
+      const cur = parseInt(fc.textContent.replace(/[KM]/g,'')) || 0;
+      fc.textContent = cur + 1;
+      showToast('Following @' + profileUser.username + ' ✅');
+      // reveal posts if private
+      if (profileUser.profile && profileUser.profile.is_private) {
+        document.getElementById('private-screen').classList.remove('show');
+        document.getElementById('profile-tabs').style.display = 'flex';
+        loadUserPosts(profileUser.username);
+      }
+    } else {
+      btn.textContent = 'Follow';
+      btn.classList.remove('following');
+      showToast('Unfollowed @' + profileUser.username);
+    }
+  }
+
+  // ── MESSAGE ───────────────────────────────────────────────
+  async function sendMessage() {
+    if (!profileUser) return;
+    showToast('Opening chat…');
+    try {
+      const r = await fetch('/api/messages/start/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+        credentials:'include',
+        body:JSON.stringify({username: profileUser.username})
+      });
+      const convo = await r.json();
+      window.location.href = '/messenger/?convo=' + convo.id;
+    } catch(e) {
+      window.location.href = '/messenger/';
+    }
+  }
+
+  // ── POST MODAL ────────────────────────────────────────────
+  function openPost(post) {
+    document.getElementById('modal-img').src = post.image;
+    document.getElementById('modal-av').src = getAvatar(post.author);
+    document.getElementById('modal-user').textContent = post.author.username;
+    document.getElementById('modal-cap-user').textContent = post.author.username;
+    document.getElementById('modal-cap-text').textContent = post.caption || '';
+    document.getElementById('modal-likes').textContent = formatCount(post.like_count) + ' likes';
+    document.getElementById('modal-time').textContent = formatTime(post.created_at);
+    document.getElementById('post-modal').classList.add('open');
+  }
+
+  function closePostModal(e) {
+    if (e.target === document.getElementById('post-modal'))
+      document.getElementById('post-modal').classList.remove('open');
+  }
+
+  // ── FOLLOWERS MODAL ───────────────────────────────────────
+  async function openFollowersModal(type) {
+    document.getElementById('followers-modal-title').textContent =
+      type === 'followers' ? 'Followers' : 'Following';
+    document.getElementById('followers-modal').classList.add('open');
+    document.getElementById('followers-list').innerHTML = '<div class="spinner"></div>';
+
+    // For now load suggested users as placeholder
+    try {
+      const r = await fetch('/api/accounts/search/?q=a', {credentials:'include'});
+      const users = await r.json();
+      if (!users.length) {
+        document.getElementById('followers-list').innerHTML =
+          '<div style="padding:30px;text-align:center;color:var(--muted)">No ' + type + ' yet</div>';
+        return;
+      }
+      document.getElementById('followers-list').innerHTML = users.map(u => {
+        const photo = getAvatar(u);
+        const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username;
+        return '<div class="follower-row" onclick="window.location.href=\'/user/' + u.username + '/\'">'
+          + '<div class="follower-avatar"><img src="' + photo + '" alt=""></div>'
+          + '<div><div class="follower-name">' + escHtml(u.username) + '</div>'
+          + '<div class="follower-sub">' + escHtml(fullName) + '</div></div>'
+          + '</div>';
+      }).join('');
+    } catch(e) {
+      document.getElementById('followers-list').innerHTML =
+        '<div style="padding:30px;text-align:center;color:var(--muted)">Could not load</div>';
+    }
+  }
+
+  function closeFollowersModal(e) {
+    if (e.target === document.getElementById('followers-modal'))
+      document.getElementById('followers-modal').classList.remove('open');
+  }
+
+  init();
+</script>
+</body>
+</html>

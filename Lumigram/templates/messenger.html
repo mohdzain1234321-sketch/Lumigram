@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumigram · Messages</title>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gradient: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+    --white: #fff;
+    --bg: #fafafa;
+    --border: #dbdbdb;
+    --text: #262626;
+    --muted: #8e8e8e;
+    --blue: #0095f6;
+    --red: #ed4956;
+    --green: #26d679;
+    --bubble-me: #0095f6;
+    --bubble-them: #efefef;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
+
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    background:var(--white); border-bottom:1px solid var(--border);
+    height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+  }
+  .nav-logo { font-family:'Grand Hotel',cursive; font-size:26px; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; cursor:pointer; }
+  .nav-title { font-size:16px; font-weight:600; }
+  .nav-icons { display:flex; align-items:center; gap:16px; }
+  .nav-icons svg { cursor:pointer; }
+  .nav-icons svg:hover { opacity:0.6; }
+  .avatar-nav { width:28px; height:28px; border-radius:50%; overflow:hidden; cursor:pointer; background:var(--gradient); padding:1px; }
+  .avatar-nav img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+
+  .messenger-layout { display:grid; grid-template-columns:360px 1fr; height:100vh; padding-top:60px; }
+
+  .left-panel { border-right:1px solid var(--border); background:var(--white); display:flex; flex-direction:column; overflow:hidden; }
+  .left-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); }
+  .left-header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .left-header-top h2 { font-size:16px; font-weight:700; }
+  .new-chat-btn { width:32px; height:32px; border-radius:50%; background:none; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .new-chat-btn:hover { background:var(--bg); }
+
+  .search-box { display:flex; align-items:center; gap:8px; background:var(--bg); border-radius:10px; padding:8px 12px; }
+  .search-box input { border:none; background:none; outline:none; font-size:14px; width:100%; color:var(--text); }
+  .search-box input::placeholder { color:var(--muted); }
+
+  .convo-list { flex:1; overflow-y:auto; }
+  .convo-list::-webkit-scrollbar { width:4px; }
+  .convo-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+  .convo-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; transition:background 0.15s; position:relative; }
+  .convo-item:hover { background:var(--bg); }
+  .convo-item.active { background:#f0f8ff; }
+
+  .convo-avatar-wrap { position:relative; flex-shrink:0; }
+  .convo-avatar { width:56px; height:56px; border-radius:50%; overflow:hidden; background:var(--gradient); padding:2px; }
+  .convo-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid var(--white); }
+  .online-dot { position:absolute; bottom:2px; right:2px; width:14px; height:14px; border-radius:50%; background:var(--green); border:2px solid var(--white); display:none; }
+  .online-dot.show { display:block; }
+
+  .convo-info { flex:1; min-width:0; }
+  .convo-name { font-weight:600; font-size:14px; margin-bottom:2px; }
+  .convo-preview { font-size:13px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .convo-preview.unread { color:var(--text); font-weight:600; }
+
+  .convo-meta { display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+  .convo-time { font-size:11px; color:var(--muted); }
+  .unread-badge { min-width:18px; height:18px; border-radius:9px; background:var(--red); color:white; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 5px; }
+
+  .empty-convos { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--muted); padding:40px; text-align:center; }
+  .empty-convos .icon { font-size:48px; }
+  .empty-convos h3 { font-size:16px; font-weight:600; color:var(--text); }
+
+  .right-panel { display:flex; flex-direction:column; background:var(--white); overflow:hidden; }
+
+  .no-chat-selected { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; color:var(--muted); }
+  .no-chat-selected .big-icon { width:96px; height:96px; border-radius:50%; border:3px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:40px; }
+  .no-chat-selected h2 { font-size:20px; font-weight:300; color:var(--text); }
+  .no-chat-selected p { font-size:14px; }
+  .start-btn { background:var(--blue); color:white; border:none; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+  .start-btn:hover { background:#1877f2; }
+
+  .chat-header { padding:12px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; background:var(--white); }
+  .chat-header-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--gradient); padding:2px; position:relative; }
+  .chat-header-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; }
+  .chat-header-dot { position:absolute; bottom:1px; right:1px; width:11px; height:11px; border-radius:50%; background:var(--green); border:2px solid white; display:none; }
+  .chat-header-dot.show { display:block; }
+  .chat-header-info { flex:1; }
+  .chat-header-name { font-weight:700; font-size:15px; }
+  .chat-header-status { font-size:12px; color:var(--muted); }
+  .chat-header-actions { display:flex; gap:12px; align-items:center; }
+  .chat-header-actions svg { cursor:pointer; }
+  .chat-header-actions svg:hover { opacity:0.6; }
+
+  .translate-header-wrap {
+    display:flex; align-items:center; gap:5px;
+    background:var(--bg); border:1px solid var(--border);
+    border-radius:20px; padding:5px 11px;
+  }
+  #translate-lang {
+    border:none; background:none; outline:none;
+    font-size:12px; color:var(--text);
+    font-family:'DM Sans',sans-serif; cursor:pointer;
+  }
+
+  .messages-area { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:4px; scroll-behavior:smooth; }
+  .messages-area::-webkit-scrollbar { width:4px; }
+  .messages-area::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+  .msg-group { display:flex; flex-direction:column; gap:2px; margin-bottom:8px; }
+  .msg-group.me { align-items:flex-end; }
+  .msg-group.them { align-items:flex-start; }
+
+  .msg-row { display:flex; align-items:flex-end; gap:8px; }
+  .msg-group.me .msg-row { flex-direction:row-reverse; }
+
+  .msg-avatar { width:28px; height:28px; border-radius:50%; overflow:hidden; flex-shrink:0; }
+  .msg-avatar img { width:100%; height:100%; object-fit:cover; }
+  .msg-avatar.hidden { visibility:hidden; }
+
+  .bubble { max-width:340px; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.5; word-break:break-word; }
+  .msg-group.me .bubble { background:var(--bubble-me); color:white; border-bottom-right-radius:4px; }
+  .msg-group.them .bubble { background:var(--bubble-them); color:var(--text); border-bottom-left-radius:4px; }
+
+  .bubble-img { max-width:240px; border-radius:12px; overflow:hidden; cursor:pointer; }
+  .bubble-img img { width:100%; display:block; }
+  .bubble-img video { width:100%; display:block; border-radius:12px; }
+
+  /* ── Shared Post Card ── */
+  .shared-post-card {
+    width: 260px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--white);
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .shared-post-card:hover { opacity: 0.9; }
+  .shared-post-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .shared-post-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--gradient);
+    padding: 1.5px;
+    flex-shrink: 0;
+  }
+  .shared-post-avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 50%;
+    border: 1.5px solid white;
+  }
+  .shared-post-author {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .shared-post-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+  }
+  .shared-post-img-placeholder {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+  .shared-post-caption {
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-top: 1px solid var(--border);
+  }
+  .shared-post-view-btn {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    background: none;
+    border: none;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    transition: background 0.15s;
+  }
+  .shared-post-view-btn:hover { background: #f0f8ff; }
+
+  .msg-meta { font-size:10px; color:var(--muted); padding:0 4px; display:flex; align-items:center; gap:4px; }
+  .msg-group.me .msg-meta { justify-content:flex-end; }
+
+  .seen-tick { display:flex; align-items:center; }
+  .seen-tick svg { width:14px; height:14px; }
+
+  .date-divider { text-align:center; color:var(--muted); font-size:12px; margin:12px 0; position:relative; }
+  .date-divider::before, .date-divider::after { content:''; position:absolute; top:50%; width:calc(50% - 60px); height:1px; background:var(--border); }
+  .date-divider::before { left:0; }
+  .date-divider::after { right:0; }
+
+  .voice-bubble { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:10px 14px; border-radius:18px; font-size:13px; max-width:340px; }
+  .voice-bubble .voice-label { font-size:10px; opacity:0.8; margin-bottom:4px; display:flex; align-items:center; gap:4px; }
+
+  .msg-translate-wrap {
+    display: flex;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+  .msg-group.them .msg-translate-wrap {
+    justify-content: flex-start;
+    padding-left: 36px;
+  }
+  .msg-group.me .msg-translate-wrap {
+    justify-content: flex-end;
+  }
+
+  .translate-btn {
+    display:inline-flex; align-items:center; gap:3px;
+    background:none; border:none; cursor:pointer;
+    font-size:11px; color:var(--muted);
+    padding:2px 8px; border-radius:10px;
+    font-family:'DM Sans',sans-serif;
+    transition:color 0.15s, background 0.15s;
+  }
+  .translate-btn:hover { color:var(--blue); background:#eaf5ff; }
+
+  .translated-box {
+    max-width:340px; margin-top:4px;
+    background:#eaf5ff; border-left:3px solid var(--blue);
+    border-radius:0 10px 10px 0; padding:8px 12px;
+    font-size:13px; color:#1a4a7a; line-height:1.5;
+    animation:fadeIn 0.2s ease;
+  }
+  .msg-group.me .translated-box {
+    border-left: none;
+    border-right: 3px solid var(--blue);
+    border-radius: 10px 0 0 10px;
+    text-align: right;
+  }
+  .translated-box .tl-label { font-size:10px; color:var(--muted); display:block; margin-bottom:3px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-3px);} to{opacity:1;transform:translateY(0);} }
+
+  .input-area { padding:12px 16px; border-top:1px solid var(--border); background:var(--white); }
+
+  .transcript-preview { display:none; background:#f0f4ff; border:1px solid #c3d4ff; border-radius:10px; padding:8px 12px; margin-bottom:8px; font-size:13px; color:#3a3a8c; }
+  .transcript-preview.show { display:flex; align-items:center; gap:8px; }
+  .transcript-text { flex:1; font-style:italic; }
+  .transcript-clear { cursor:pointer; color:var(--muted); font-size:16px; }
+
+  .lang-row { display:none; margin-bottom:8px; }
+  .lang-row.show { display:flex; align-items:center; gap:8px; }
+  .lang-select { border:1px solid var(--border); border-radius:8px; padding:5px 10px; font-size:12px; outline:none; background:var(--white); color:var(--text); flex:1; }
+
+  .input-row { display:flex; align-items:center; gap:10px; }
+  .input-icon-btn { background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:4px; color:var(--text); flex-shrink:0; }
+  .input-icon-btn:hover { color:var(--blue); }
+
+  .msg-input { flex:1; border:none; outline:none; background:var(--bg); border-radius:22px; padding:10px 16px; font-size:14px; font-family:'DM Sans',sans-serif; resize:none; max-height:120px; line-height:1.4; }
+  .msg-input::placeholder { color:var(--muted); }
+
+  .send-btn { width:38px; height:38px; border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; background:var(--blue); color:white; transition:all 0.2s; flex-shrink:0; }
+  .send-btn:hover { background:#1877f2; transform:scale(1.05); }
+  .send-btn.recording { background:var(--red); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+
+  .media-preview { display:none; margin-bottom:8px; position:relative; width:fit-content; }
+  .media-preview.show { display:block; }
+  .media-preview img, .media-preview video { max-width:160px; max-height:120px; border-radius:10px; object-fit:cover; }
+  .media-preview-remove { position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:var(--red); color:white; font-size:12px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:var(--white); border-radius:12px; width:400px; max-width:95vw; animation:modalIn 0.2s ease; overflow:hidden; }
+  @keyframes modalIn { from{transform:scale(0.92);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .modal-box-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-box-header h3 { font-size:15px; font-weight:700; }
+  .modal-close-btn { background:none; border:none; cursor:pointer; font-size:20px; color:var(--muted); }
+  .modal-search { padding:12px 20px; border-bottom:1px solid var(--border); }
+  .modal-search input { width:100%; border:none; background:var(--bg); border-radius:10px; padding:9px 14px; font-size:14px; outline:none; }
+  .modal-results { max-height:300px; overflow-y:auto; }
+  .modal-user-item { display:flex; align-items:center; gap:12px; padding:12px 20px; cursor:pointer; transition:background 0.15s; }
+  .modal-user-item:hover { background:var(--bg); }
+  .modal-user-avatar { width:44px; height:44px; border-radius:50%; overflow:hidden; background:var(--gradient); padding:2px; }
+  .modal-user-avatar img { width:100%; height:100%; object-fit:cover; border-radius:50%; border:2px solid white; }
+  .modal-user-name { font-weight:600; font-size:14px; }
+  .modal-user-sub { font-size:12px; color:var(--muted); }
+
+  .spinner { text-align:center; padding:30px; color:var(--muted); }
+  .spinner::after { content:''; display:inline-block; width:24px; height:24px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--blue); animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg);} }
+
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:#333; color:white; padding:10px 22px; border-radius:20px; font-size:13px; font-weight:500; z-index:999; transition:transform 0.3s; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+
+  @media(max-width:768px) {
+    .messenger-layout { grid-template-columns:1fr; }
+    .right-panel { display:none; }
+    .right-panel.mobile-open { display:flex; position:fixed; inset:0; top:60px; z-index:50; }
+    .left-panel.mobile-hide { display:none; }
+    .translate-header-wrap { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="window.location.href='/'">Lumigram</div>
+  <div class="nav-title">Messages</div>
+  <div class="nav-icons">
+    <svg onclick="window.location.href='/'" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <div class="avatar-nav" onclick="window.location.href='/api/accounts/profile-page/'">
+      <img id="nav-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=zain" alt="">
+    </div>
+  </div>
+</nav>
+
+<div class="messenger-layout">
+
+  <div class="left-panel" id="left-panel">
+    <div class="left-header">
+      <div class="left-header-top">
+        <h2 id="left-username">zain</h2>
+        <button class="new-chat-btn" onclick="openNewChat()" title="New message">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+      </div>
+      <div class="search-box">
+        <svg width="14" height="14" fill="none" stroke="#8e8e8e" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search" id="search-input" oninput="filterConvos(this.value)">
+      </div>
+    </div>
+    <div class="convo-list" id="convo-list"><div class="spinner"></div></div>
+  </div>
+
+  <div class="right-panel" id="right-panel">
+    <div class="no-chat-selected" id="no-chat-selected">
+      <div class="big-icon">💬</div>
+      <h2>Your Messages</h2>
+      <p>Send a message to start a conversation</p>
+      <button class="start-btn" onclick="openNewChat()">Send Message</button>
+    </div>
+
+    <div id="active-chat" style="display:none;flex-direction:column;height:100%;">
+
+      <div class="chat-header">
+        <button style="background:none;border:none;cursor:pointer;display:none;" id="back-btn" onclick="goBack()">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="chat-header-avatar">
+          <img id="chat-avatar" src="" alt="">
+          <div class="chat-header-dot" id="chat-online-dot"></div>
+        </div>
+        <div class="chat-header-info">
+          <div class="chat-header-name" id="chat-name"></div>
+          <div class="chat-header-status" id="chat-status">Active now</div>
+        </div>
+        <div class="chat-header-actions">
+
+          <div class="translate-header-wrap" title="Auto-translate received messages">
+            <span style="font-size:14px;">🌐</span>
+            <select id="translate-lang" onchange="onTranslateLangChange()">
+              <option value="">Translate to…</option>
+              <option value="en">English 🇺🇸</option>
+              <option value="ar">Arabic 🇸🇦</option>
+              <option value="hi">Hindi 🇮🇳</option>
+              <option value="fr">French 🇫🇷</option>
+              <option value="es">Spanish 🇪🇸</option>
+              <option value="de">German 🇩🇪</option>
+              <option value="it">Italian 🇮🇹</option>
+              <option value="pt">Portuguese 🇧🇷</option>
+              <option value="ru">Russian 🇷🇺</option>
+              <option value="ja">Japanese 🇯🇵</option>
+              <option value="ko">Korean 🇰🇷</option>
+              <option value="zh-CN">Chinese 🇨🇳</option>
+              <option value="tr">Turkish 🇹🇷</option>
+              <option value="nl">Dutch 🇳🇱</option>
+              <option value="sv">Swedish 🇸🇪</option>
+              <option value="pl">Polish 🇵🇱</option>
+              <option value="uk">Ukrainian 🇺🇦</option>
+              <option value="id">Indonesian 🇮🇩</option>
+              <option value="th">Thai 🇹🇭</option>
+              <option value="vi">Vietnamese 🇻🇳</option>
+              <option value="ro">Romanian 🇷🇴</option>
+              <option value="cs">Czech 🇨🇿</option>
+              <option value="el">Greek 🇬🇷</option>
+              <option value="he">Hebrew 🇮🇱</option>
+              <option value="bn">Bengali 🇧🇩</option>
+              <option value="ur">Urdu 🇵🇰</option>
+              <option value="fa">Persian 🇮🇷</option>
+              <option value="ms">Malay 🇲🇾</option>
+              <option value="ta">Tamil 🇮🇳</option>
+              <option value="kn">Kannada 🇮🇳</option>
+            </select>
+          </div>
+
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" onclick="showToast('Voice call coming soon!')"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.98-.98a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" onclick="showToast('Video call coming soon!')"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" onclick="showToast('Info coming soon!')"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+      </div>
+
+      <div class="messages-area" id="messages-area"><div class="spinner"></div></div>
+
+      <div class="input-area">
+        <div class="transcript-preview" id="transcript-preview">
+          <span style="font-size:16px;">🎙️</span>
+          <span class="transcript-text" id="transcript-text"></span>
+          <span class="transcript-clear" onclick="clearTranscript()">✕</span>
+        </div>
+        <div class="lang-row" id="lang-row">
+          <span style="font-size:12px;color:var(--muted);flex-shrink:0;">🎙️ Voice language:</span>
+          <select class="lang-select" id="lang-select">
+            <option value="en-US">🇺🇸 English</option>
+            <option value="ar-SA">🇸🇦 Arabic</option>
+            <option value="hi-IN">🇮🇳 Hindi</option>
+            <option value="fr-FR">🇫🇷 French</option>
+            <option value="es-ES">🇪🇸 Spanish</option>
+            <option value="de-DE">🇩🇪 German</option>
+            <option value="it-IT">🇮🇹 Italian</option>
+            <option value="pt-BR">🇧🇷 Portuguese</option>
+            <option value="ru-RU">🇷🇺 Russian</option>
+            <option value="ja-JP">🇯🇵 Japanese</option>
+            <option value="ko-KR">🇰🇷 Korean</option>
+            <option value="zh-CN">🇨🇳 Chinese</option>
+            <option value="tr-TR">🇹🇷 Turkish</option>
+            <option value="nl-NL">🇳🇱 Dutch</option>
+            <option value="sv-SE">🇸🇪 Swedish</option>
+            <option value="pl-PL">🇵🇱 Polish</option>
+            <option value="ur-PK">🇵🇰 Urdu</option>
+            <option value="bn-BD">🇧🇩 Bengali</option>
+            <option value="id-ID">🇮🇩 Indonesian</option>
+            <option value="ms-MY">🇲🇾 Malay</option>
+            <option value="th-TH">🇹🇭 Thai</option>
+            <option value="vi-VN">🇻🇳 Vietnamese</option>
+            <option value="ta-IN">🇮🇳 Tamil</option>
+            <option value="kn-IN">🇮🇳 Kannada</option>
+          </select>
+        </div>
+        <div class="media-preview" id="media-preview">
+          <img id="preview-img" style="display:none;" alt="">
+          <video id="preview-vid" style="display:none;" controls></video>
+          <button class="media-preview-remove" onclick="clearMedia()">✕</button>
+        </div>
+        <div class="input-row">
+          <button class="input-icon-btn" onclick="document.getElementById('media-input').click()" title="Send photo/video">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <input type="file" id="media-input" accept="image/*,video/*" style="display:none" onchange="handleMedia(this)">
+          <button class="input-icon-btn" id="mic-btn" onclick="toggleMic()" title="Voice message">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <textarea class="msg-input" id="msg-input" placeholder="Message…" rows="1"
+            oninput="autoResize(this)" onkeydown="handleEnter(event)"></textarea>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">
+            <svg width="18" height="18" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="new-chat-modal" onclick="closeNewChatOutside(event)">
+  <div class="modal-box">
+    <div class="modal-box-header">
+      <h3>New Message</h3>
+      <button class="modal-close-btn" onclick="closeNewChat()">×</button>
+    </div>
+    <div class="modal-search">
+      <input type="text" placeholder="Search users…" id="user-search-input" oninput="searchUsers(this.value)">
+    </div>
+    <div class="modal-results" id="user-search-results">
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Type a name to search</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentUser    = null;
+  let currentConvoId = null;
+  let allConvos      = [];
+  let pollInterval   = null;
+  let recognition    = null;
+  let isRecording    = false;
+  let transcript     = '';
+  let mediaFile      = null;
+  let translateTarget = '';
+
+  function getCookie(name) {
+    for (let c of document.cookie.split(';')) {
+      const [k,v] = c.trim().split('=');
+      if (k === name) return decodeURIComponent(v);
+    }
+    return null;
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  async function init() {
+    try {
+      const r = await fetch('/api/accounts/profile/zain/', {credentials:'include'});
+      const d = await r.json();
+      currentUser = d;
+      document.getElementById('left-username').textContent = d.username;
+      const photo = d.profile && d.profile.photo ? d.profile.photo : null;
+      if (photo) document.getElementById('nav-avatar').src = photo;
+    } catch(e) {}
+    loadConversations();
+    initSpeechRecognition();
+  }
+
+  async function loadConversations() {
+    try {
+      const r = await fetch('/api/messages/', {credentials:'include'});
+      allConvos = await r.json();
+      renderConvoList(allConvos);
+    } catch(e) {
+      document.getElementById('convo-list').innerHTML =
+        '<div class="empty-convos"><div class="icon">💬</div><h3>No messages yet</h3><p>Start a conversation!</p></div>';
+    }
+  }
+
+  function renderConvoList(convos) {
+    const list = document.getElementById('convo-list');
+    if (!convos.length) {
+      list.innerHTML = '<div class="empty-convos"><div class="icon">💬</div><h3>No messages yet</h3><p>Tap the pencil icon to start a chat</p></div>';
+      return;
+    }
+    list.innerHTML = convos.map(c => {
+      const other = c.participants.find(p => currentUser && p.username !== currentUser.username) || c.participants[0];
+      const avatar = other && other.profile && other.profile.photo
+        ? other.profile.photo
+        : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (other ? other.username : 'u');
+      const lastMsg = c.last_message;
+      let preview = 'Start chatting!';
+      if (lastMsg) {
+        if (lastMsg.shared_post_data) preview = '📷 Shared a post';
+        else if (lastMsg.image) preview = '📷 Photo';
+        else if (lastMsg.video) preview = '🎬 Video';
+        else preview = lastMsg.content || '';
+      }
+      const isUnread = c.unread_count > 0;
+      const time = lastMsg ? formatTime(lastMsg.created_at) : '';
+      const isActive = c.id === currentConvoId;
+      return '<div class="convo-item' + (isActive ? ' active' : '') + '" onclick="openConvo(' + c.id + ')">'
+        + '<div class="convo-avatar-wrap"><div class="convo-avatar"><img src="' + avatar + '" alt=""></div>'
+        + '<div class="online-dot" id="dot-' + c.id + '"></div></div>'
+        + '<div class="convo-info"><div class="convo-name">' + (other ? other.username : 'Unknown') + '</div>'
+        + '<div class="convo-preview' + (isUnread ? ' unread' : '') + '">' + escHtml(preview.substring(0,40)) + '</div></div>'
+        + '<div class="convo-meta"><div class="convo-time">' + time + '</div>'
+        + (isUnread ? '<div class="unread-badge">' + c.unread_count + '</div>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+
+  function filterConvos(q) {
+    if (!q.trim()) { renderConvoList(allConvos); return; }
+    const filtered = allConvos.filter(c => {
+      const other = c.participants.find(p => currentUser && p.username !== currentUser.username);
+      return other && other.username.toLowerCase().includes(q.toLowerCase());
+    });
+    renderConvoList(filtered);
+  }
+
+  async function openConvo(convoId) {
+    currentConvoId = convoId;
+    const convo = allConvos.find(c => c.id === convoId);
+    const other = convo && convo.participants.find(p => currentUser && p.username !== currentUser.username);
+    const avatar = other && other.profile && other.profile.photo
+      ? other.profile.photo
+      : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (other ? other.username : 'u');
+    document.getElementById('chat-avatar').src = avatar;
+    document.getElementById('chat-name').textContent = other ? other.username : 'Chat';
+    document.getElementById('chat-status').textContent = 'Active now';
+    document.getElementById('no-chat-selected').style.display = 'none';
+    document.getElementById('active-chat').style.display = 'flex';
+    if (window.innerWidth <= 768) {
+      document.getElementById('left-panel').classList.add('mobile-hide');
+      document.getElementById('right-panel').classList.add('mobile-open');
+      document.getElementById('back-btn').style.display = 'block';
+    }
+    renderConvoList(allConvos);
+    lastMsgCount = 0;
+    lastMsgId = null;
+    loadMessages(convoId);
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => { if (currentConvoId) loadMessages(currentConvoId, true); }, 3000);
+  }
+
+  function goBack() {
+    document.getElementById('left-panel').classList.remove('mobile-hide');
+    document.getElementById('right-panel').classList.remove('mobile-open');
+    currentConvoId = null;
+    if (pollInterval) clearInterval(pollInterval);
+  }
+
+  let lastMsgCount = 0;
+  let lastMsgId = null;
+
+  async function loadMessages(convoId, silent=false) {
+    const area = document.getElementById('messages-area');
+    if (!silent) area.innerHTML = '<div class="spinner"></div>';
+    try {
+      const r = await fetch('/api/messages/' + convoId + '/messages/', {credentials:'include'});
+      const msgs = await r.json();
+
+      if (silent) {
+        const latestId = msgs.length ? msgs[msgs.length-1].id : null;
+        if (msgs.length === lastMsgCount && latestId === lastMsgId) return;
+      }
+
+      lastMsgCount = msgs.length;
+      lastMsgId = msgs.length ? msgs[msgs.length-1].id : null;
+
+      renderMessages(msgs);
+      loadConversations();
+    } catch(e) {
+      if (!silent) area.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Could not load messages</div>';
+    }
+  }
+
+  // ── Shared Post Card HTML builder ─────────────────────────
+  function buildSharedPostCard(post) {
+    const authorAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + post.author;
+    const imgHtml = post.image
+      ? '<img class="shared-post-img" src="' + post.image + '" alt="post">'
+      : '<div class="shared-post-img-placeholder">📷</div>';
+    const caption = post.caption ? escHtml(post.caption.substring(0, 80)) + (post.caption.length > 80 ? '…' : '') : '';
+
+    return '<div class="shared-post-card" onclick="window.location.href=\'/posts/' + post.id + '/\'">'
+      + '<div class="shared-post-header">'
+      + '<div class="shared-post-avatar"><img src="' + authorAvatar + '" alt="' + post.author + '"></div>'
+      + '<span class="shared-post-author">' + escHtml(post.author) + '</span>'
+      + '</div>'
+      + imgHtml
+      + (caption ? '<div class="shared-post-caption">' + caption + '</div>' : '')
+      + '<button class="shared-post-view-btn">View Post</button>'
+      + '</div>';
+  }
+
+  function renderMessages(msgs) {
+    const area = document.getElementById('messages-area');
+    const wasAtBottom = area.scrollHeight - area.scrollTop - area.clientHeight < 80;
+
+    if (!msgs.length) {
+      area.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;">No messages yet. Say hello! 👋</div>';
+      return;
+    }
+
+    let html = '';
+    let lastDate = '';
+    let lastSenderId = null;
+
+    msgs.forEach((msg, i) => {
+      const isMe = currentUser && msg.sender.username === currentUser.username;
+      const msgDate = new Date(msg.created_at).toLocaleDateString();
+      const msgTime = formatTime(msg.created_at);
+
+      if (msgDate !== lastDate) {
+        html += '<div class="date-divider">' + msgDate + '</div>';
+        lastDate = msgDate;
+        lastSenderId = null;
+      }
+
+      const showAvatar = !isMe && msg.sender.id !== lastSenderId;
+      const isLastInGroup = i === msgs.length-1 || msgs[i+1].sender.id !== msg.sender.id;
+      lastSenderId = msg.sender.id;
+
+      const senderAvatar = msg.sender.profile && msg.sender.profile.photo
+        ? msg.sender.profile.photo
+        : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + msg.sender.username;
+
+      html += '<div class="msg-group ' + (isMe ? 'me' : 'them') + '">';
+      html += '<div class="msg-row">';
+
+      if (!isMe) {
+        html += '<div class="msg-avatar' + (showAvatar ? '' : ' hidden') + '"><img src="' + senderAvatar + '" alt=""></div>';
+      }
+
+      // ── Render based on message type ──
+      if (msg.shared_post_data) {
+        // Rich post card
+        html += buildSharedPostCard(msg.shared_post_data);
+
+      } else if (msg.image) {
+        html += '<div class="bubble-img"><img src="' + msg.image + '" alt="" onclick="openImage(\'' + msg.image + '\')"></div>';
+
+      } else if (msg.video) {
+        html += '<div class="bubble-img"><video src="' + msg.video + '" controls></div>';
+
+      } else {
+        const isVoice = msg.content && msg.content.startsWith('[🎙️]');
+        if (isVoice) {
+          const clean = msg.content.replace('[🎙️]', '').trim();
+          html += '<div class="voice-bubble"><div class="voice-label">🎙️ Voice transcription</div>' + escHtml(clean) + '</div>';
+        } else {
+          html += '<div class="bubble">' + escHtml(msg.content) + '</div>';
+        }
+      }
+
+      html += '</div>';
+
+      // Translate button — only for text messages, not post cards
+      if (msg.content && !msg.image && !msg.video && !msg.shared_post_data) {
+        const cleanText = msg.content.replace(/^\[🎙️\]\s*/,'').trim();
+        const safeText = cleanText.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ');
+        html += '<div class="msg-translate-wrap" id="tw-' + msg.id + '">'
+          + '<button class="translate-btn" onclick="translateOne(' + msg.id + ',\'' + safeText + '\',this)">🌐 Translate</button>'
+          + '</div>';
+      }
+
+      if (isLastInGroup) {
+        html += '<div class="msg-meta">' + msgTime;
+        if (isMe) {
+          html += '<div class="seen-tick">'
+            + (msg.is_seen
+              ? '<svg viewBox="0 0 24 24" fill="none"><path d="M1 13l4 4L15 7" stroke="#0095f6" stroke-width="2.5"/><path d="M7 13l4 4L21 7" stroke="#0095f6" stroke-width="2.5"/></svg>'
+              : '<svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#8e8e8e" stroke-width="2.5"/></svg>')
+            + '</div>';
+        }
+        html += '</div>';
+      }
+
+      html += '</div>';
+    });
+
+    area.innerHTML = html;
+    if (wasAtBottom || !currentConvoId) area.scrollTop = area.scrollHeight;
+
+    if (translateTarget) translateAllVisible();
+  }
+
+  // ── TRANSLATION ──────────────────────────────────────────
+  function onTranslateLangChange() {
+    translateTarget = document.getElementById('translate-lang').value;
+    document.querySelectorAll('.translated-box').forEach(el => el.remove());
+    document.querySelectorAll('.translate-btn').forEach(btn => {
+      btn.textContent = '🌐 Translate';
+      btn.disabled = false;
+    });
+    if (translateTarget) translateAllVisible();
+  }
+
+  async function translateAllVisible() {
+    const btns = document.querySelectorAll('.translate-btn');
+    for (const btn of btns) {
+      const wrap = btn.closest('.msg-translate-wrap');
+      if (wrap && wrap.querySelector('.translated-box')) continue;
+      const onclick = btn.getAttribute('onclick') || '';
+      const match = onclick.match(/translateOne\(\d+,'([\s\S]*?)',this\)/);
+      if (!match) continue;
+      const text = match[1].replace(/\\'/g,"'").replace(/\\\\/g,'\\');
+      await doTranslate(btn, text, translateTarget);
+    }
+  }
+
+  async function translateOne(msgId, text, btn) {
+    if (!translateTarget) {
+      showToast('Select a language from the 🌐 dropdown in the header first!');
+      return;
+    }
+    const wrap = document.getElementById('tw-' + msgId);
+    const existing = wrap ? wrap.querySelector('.translated-box') : null;
+    if (existing) { existing.remove(); btn.textContent = '🌐 Translate'; return; }
+    await doTranslate(btn, text, translateTarget);
+  }
+
+  async function doTranslate(btn, text, targetLang) {
+    btn.textContent = '⏳…';
+    btn.disabled = true;
+    try {
+      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='
+        + encodeURIComponent(targetLang)
+        + '&dt=t&q=' + encodeURIComponent(text.substring(0, 500));
+      const res = await fetch(url);
+      const data = await res.json();
+      const translated = data?.[0]?.map(s => s?.[0]).filter(Boolean).join('');
+
+      const langNames = {
+        en:'English', ar:'Arabic', hi:'Hindi', fr:'French', es:'Spanish', de:'German',
+        it:'Italian', pt:'Portuguese', ru:'Russian', ja:'Japanese', ko:'Korean',
+        'zh-CN':'Chinese', tr:'Turkish', nl:'Dutch', sv:'Swedish', pl:'Polish',
+        uk:'Ukrainian', id:'Indonesian', th:'Thai', vi:'Vietnamese', ro:'Romanian',
+        cs:'Czech', el:'Greek', he:'Hebrew', bn:'Bengali', ur:'Urdu', fa:'Persian',
+        ms:'Malay', ta:'Tamil', kn:'Kannada'
+      };
+
+      if (translated && translated.trim()) {
+        const wrap = btn.closest('.msg-translate-wrap');
+        const box = document.createElement('div');
+        box.className = 'translated-box';
+        box.innerHTML = '<span class="tl-label">🌐 ' + (langNames[targetLang] || targetLang) + '</span>' + escHtml(translated);
+        btn.after(box);
+        btn.textContent = '🌐 Hide';
+      } else {
+        showToast('Could not translate this message.');
+        btn.textContent = '🌐 Translate';
+      }
+    } catch(e) {
+      showToast('Translation failed. Check your connection.');
+      btn.textContent = '🌐 Translate';
+    }
+    btn.disabled = false;
+  }
+
+  // ── SEND ─────────────────────────────────────────────────
+  async function sendMessage() {
+    if (!currentConvoId) return;
+    const input = document.getElementById('msg-input');
+    let content = input.value.trim();
+    if (transcript) {
+      content = '[🎙️] ' + transcript + (content ? '\n' + content : '');
+      clearTranscript();
+    }
+    if (!content && !mediaFile) return;
+    const formData = new FormData();
+    formData.append('content', content);
+    if (mediaFile) {
+      if (mediaFile.type.startsWith('image/')) formData.append('image', mediaFile);
+      else formData.append('video', mediaFile);
+    }
+    input.value = '';
+    input.style.height = 'auto';
+    clearMedia();
+    try {
+      await fetch('/api/messages/' + currentConvoId + '/send/', {
+        method:'POST', body:formData,
+        headers:{'X-CSRFToken':getCookie('csrftoken')},
+        credentials:'include'
+      });
+      loadMessages(currentConvoId, true);
+      loadConversations();
+    } catch(e) { showToast('Failed to send. Try again.'); }
+  }
+
+  function handleEnter(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+  function autoResize(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px'; }
+
+  // ── MEDIA ────────────────────────────────────────────────
+  function handleMedia(input) {
+    const file = input.files[0]; if (!file) return;
+    mediaFile = file;
+    const url = URL.createObjectURL(file);
+    document.getElementById('media-preview').classList.add('show');
+    if (file.type.startsWith('image/')) {
+      document.getElementById('preview-img').src = url;
+      document.getElementById('preview-img').style.display = 'block';
+      document.getElementById('preview-vid').style.display = 'none';
+    } else {
+      document.getElementById('preview-vid').src = url;
+      document.getElementById('preview-vid').style.display = 'block';
+      document.getElementById('preview-img').style.display = 'none';
+    }
+  }
+  function clearMedia() { mediaFile = null; document.getElementById('media-preview').classList.remove('show'); document.getElementById('media-input').value = ''; }
+  function openImage(src) { window.open(src, '_blank'); }
+
+  // ── VOICE ────────────────────────────────────────────────
+  function initSpeechRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { document.getElementById('mic-btn').style.display = 'none'; return; }
+    recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = function(e) {
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      document.getElementById('transcript-text').textContent = final || interim;
+      if (final) transcript = final;
+    };
+    recognition.onend = function() {
+      isRecording = false;
+      const btn = document.getElementById('send-btn');
+      btn.classList.remove('recording');
+      btn.innerHTML = '<svg width="18" height="18" fill="none" stroke="white" stroke-width="2.5" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+      if (transcript) { document.getElementById('transcript-preview').classList.add('show'); document.getElementById('lang-row').classList.remove('show'); }
+    };
+    recognition.onerror = function(e) { showToast('Mic error: ' + e.error); isRecording = false; };
+  }
+
+  function toggleMic() {
+    if (!recognition) { showToast('Voice not supported in this browser. Use Chrome.'); return; }
+    if (isRecording) {
+      recognition.stop();
+      document.getElementById('lang-row').classList.remove('show');
+    } else {
+      transcript = '';
+      document.getElementById('transcript-text').textContent = '';
+      document.getElementById('transcript-preview').classList.remove('show');
+      document.getElementById('lang-row').classList.add('show');
+      recognition.lang = document.getElementById('lang-select').value;
+      recognition.start();
+      isRecording = true;
+      const btn = document.getElementById('send-btn');
+      btn.classList.add('recording');
+      btn.innerHTML = '<svg width="18" height="18" fill="white" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+      showToast('🎙️ Listening… Speak now');
+    }
+  }
+  function clearTranscript() { transcript = ''; document.getElementById('transcript-text').textContent = ''; document.getElementById('transcript-preview').classList.remove('show'); }
+
+  // ── NEW CHAT MODAL ───────────────────────────────────────
+  function openNewChat() {
+    document.getElementById('new-chat-modal').classList.add('open');
+    document.getElementById('user-search-input').value = '';
+    document.getElementById('user-search-results').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Type a name to search</div>';
+    setTimeout(() => document.getElementById('user-search-input').focus(), 100);
+  }
+  function closeNewChat() { document.getElementById('new-chat-modal').classList.remove('open'); }
+  function closeNewChatOutside(e) { if (e.target.id === 'new-chat-modal') closeNewChat(); }
+
+  let searchTimer;
+  async function searchUsers(q) {
+    clearTimeout(searchTimer);
+    const results = document.getElementById('user-search-results');
+    if (!q.trim()) { results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Type a name to search</div>'; return; }
+    searchTimer = setTimeout(async () => {
+      results.innerHTML = '<div class="spinner"></div>';
+      try {
+        const r = await fetch('/api/accounts/search/?q=' + encodeURIComponent(q), {credentials:'include'});
+        const users = await r.json();
+        if (!users.length) { results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">No users found</div>'; return; }
+        results.innerHTML = users.map(u => {
+          const photo = u.profile && u.profile.photo ? u.profile.photo : 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + u.username;
+          return '<div class="modal-user-item" onclick="startChat(\'' + u.username + '\')">'
+            + '<div class="modal-user-avatar"><img src="' + photo + '" alt=""></div>'
+            + '<div><div class="modal-user-name">' + u.username + '</div>'
+            + '<div class="modal-user-sub">' + (u.first_name || '') + ' ' + (u.last_name || '') + '</div></div></div>';
+        }).join('');
+      } catch(e) { results.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted)">Search error</div>'; }
+    }, 350);
+  }
+
+  async function startChat(username) {
+    closeNewChat();
+    showToast('Opening chat with ' + username + '…');
+    try {
+      const r = await fetch('/api/messages/start/', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+        credentials:'include',
+        body:JSON.stringify({username:username})
+      });
+      const convo = await r.json();
+      await loadConversations();
+      openConvo(convo.id);
+    } catch(e) { showToast('Could not start chat. Try again.'); }
+  }
+
+  function formatTime(dt) {
+    const d = new Date(dt); const now = new Date(); const diff = (now - d) / 1000;
+    if (diff < 60) return 'now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm';
+    if (diff < 86400) return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return d.toLocaleDateString([],{month:'short',day:'numeric'});
+  }
+
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  }
+
+  init();
+</script>
+</body>
+</html>

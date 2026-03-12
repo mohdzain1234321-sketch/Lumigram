@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Upload bar ── */
+  .upload-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .upload-bar input[type="file"] { color: #aaa; font-size: 13px; flex: 0 0 auto; }
+  .upload-bar input[type="text"] {
+    flex: 1; padding: 8px 14px;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08); color: white; font-size: 13px; outline: none;
+  }
+  .upload-bar input[type="text"]::placeholder { color: rgba(255,255,255,0.35); }
+  .upload-bar button {
+    background: linear-gradient(135deg, #e91e8c, #c2185b);
+    color: white; border: none; padding: 8px 18px;
+    border-radius: 20px; font-size: 13px; font-weight: 600;
+    cursor: pointer; white-space: nowrap; transition: opacity 0.2s;
+  }
+  .upload-bar button:hover { opacity: 0.85; }
+
+  /* ── Reels container ── */
+  .reels-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background: #000;
+    padding-top: 56px;
+  }
+
+  /* ── Single reel card ── */
+  .reel-card {
+    height: calc(100vh - 56px);
+    scroll-snap-align: start;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #0a0a0a;
+  }
+  .reel-card video {
+    height: 100%; max-width: 420px; width: 100%; object-fit: cover;
+  }
+  /* bottom gradient */
+  .reel-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+    background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Right action buttons ── */
+  .reel-actions {
+    position: absolute; right: 14px; bottom: 110px;
+    display: flex; flex-direction: column; align-items: center; gap: 22px;
+    z-index: 10;
+  }
+  .reel-btn {
+    background: none; border: none; color: white; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    transition: transform 0.15s ease;
+  }
+  .reel-btn:active { transform: scale(0.88); }
+  .reel-btn .icon { font-size: 26px; line-height: 1; }
+  .reel-btn .count { font-size: 12px; font-weight: 600; font-family: sans-serif; }
+
+  /* spinning disc */
+  .disc {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.6);
+    background: linear-gradient(135deg, #1a1a1a, #444);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; animation: spin 4s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Bottom info ── */
+  .reel-info {
+    position: absolute; bottom: 24px; left: 14px; right: 70px;
+    z-index: 10; color: white;
+  }
+  .reel-user-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .reel-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    padding: 2px;
+  }
+  .reel-avatar-inner {
+    width: 100%; height: 100%; border-radius: 50%; background: #222;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 15px; font-weight: bold; font-family: sans-serif;
+  }
+  .reel-username { font-weight: 700; font-size: 14px; font-family: sans-serif; }
+  .follow-btn {
+    margin-left: auto;
+    background: transparent; border: 1.5px solid white;
+    color: white; font-size: 13px; font-weight: 600;
+    padding: 5px 14px; border-radius: 8px;
+    cursor: pointer; font-family: sans-serif; transition: opacity 0.2s;
+  }
+  .follow-btn:hover { opacity: 0.7; }
+  .reel-audio {
+    font-size: 12px; color: rgba(255,255,255,0.65);
+    font-family: sans-serif; margin-bottom: 6px;
+  }
+  .reel-caption {
+    font-size: 13px; font-family: sans-serif;
+    color: rgba(255,255,255,0.9); line-height: 1.45;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden; cursor: pointer;
+  }
+  .reel-caption.expanded { display: block; }
+
+  /* ── Comments drawer ── */
+  .comment-box {
+    display: none;
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: #1a1a1a;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+    z-index: 999;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .comment-box.open { display: block; }
+  .comment-box h3 {
+    color: white; font-size: 16px; font-family: sans-serif;
+    margin-bottom: 12px; font-weight: 700;
+  }
+  .comment-item {
+    color: rgba(255,255,255,0.85); font-size: 13px;
+    font-family: sans-serif; margin-bottom: 8px; line-height: 1.4;
+  }
+  .comment-item strong { color: white; }
+  .comment-input { display: flex; gap: 10px; margin-top: 14px; }
+  .comment-input input {
+    flex: 1; padding: 9px 14px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08); color: white; font-size: 13px; outline: none;
+  }
+  .comment-input input::placeholder { color: rgba(255,255,255,0.35); }
+  .comment-input button {
+    background: linear-gradient(135deg, #e91e8c, #c2185b);
+    color: white; border: none; border-radius: 20px;
+    padding: 9px 18px; cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+
+  /* close overlay behind comments */
+  .comment-overlay {
+    display: none;
+    position: absolute; inset: 0;
+    z-index: 998;
+    background: rgba(0,0,0,0.4);
+  }
+  .comment-overlay.open { display: block; }
+</style>
+
+<!-- Upload bar -->
+<div class="upload-bar">
+  <input type="file" id="reelVideo" accept="video/*">
+  <input type="text" id="reelCaption" placeholder="Write a caption...">
+  <button onclick="uploadReel()">🎬 Upload</button>
+</div>
+
+<!-- Reels feed -->
+<div class="reels-container" id="reels-container"></div>
+
+<script>
+async function init() {
+  await fetch('/api/accounts/login/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    credentials: 'include',
+    body: JSON.stringify({ username: 'zain', password: 'Zain@1234567' })
+  });
+  loadReels();
+}
+
+function getCookie(name) {
+  for (let c of document.cookie.split(';')) {
+    const [k, v] = c.trim().split('=');
+    if (k === name) return decodeURIComponent(v);
+  }
+  return null;
+}
+
+async function loadReels() {
+  const res = await fetch('/api/reels/');
+  const reels = await res.json();
+  const container = document.getElementById('reels-container');
+  container.innerHTML = '';
+
+  reels.forEach(reel => {
+    const initial  = reel.author.username[0].toUpperCase();
+    const comments = reel.comments || [];
+
+    container.innerHTML += `
+    <div class="reel-card" id="reel-${reel.id}">
+      <video src="${reel.video}" loop playsinline></video>
+
+      <div class="reel-gradient"></div>
+
+      <!-- Right actions -->
+      <div class="reel-actions">
+        <button class="reel-btn" id="like-btn-${reel.id}" onclick="likeReel(${reel.id}, this)">
+          <span class="icon">🤍</span>
+          <span class="count" id="likes-${reel.id}">${reel.like_count}</span>
+        </button>
+        <button class="reel-btn" onclick="toggleComments(${reel.id})">
+          <span class="icon">💬</span>
+          <span class="count" id="comment-count-${reel.id}">${comments.length}</span>
+        </button>
+        <button class="reel-btn" onclick="shareReel(${reel.id})">
+          <span class="icon">📤</span>
+          <span class="count">Share</span>
+        </button>
+        <div class="disc">🎵</div>
+      </div>
+
+      <!-- Bottom info -->
+      <div class="reel-info">
+        <div class="reel-user-row">
+          <div class="reel-avatar">
+            <div class="reel-avatar-inner">${initial}</div>
+          </div>
+          <span class="reel-username">@${reel.author.username}</span>
+          <button class="follow-btn" onclick="toggleFollow(this)">Follow</button>
+        </div>
+        <div class="reel-audio">🎵 Original Audio · ${reel.author.username}</div>
+        <div class="reel-caption" onclick="this.classList.toggle('expanded')">
+          ${reel.caption}
+        </div>
+      </div>
+
+      <!-- Click overlay to close comments -->
+      <div class="comment-overlay" id="overlay-${reel.id}" onclick="toggleComments(${reel.id})"></div>
+
+      <!-- Comments drawer -->
+      <div class="comment-box" id="comments-${reel.id}">
+        <h3>💬 Comments</h3>
+        <div id="comment-list-${reel.id}">
+          ${comments.map(c => `
+            <div class="comment-item"><strong>${c.user.username}</strong>: ${c.content}</div>
+          `).join('')}
+        </div>
+        <div class="comment-input">
+          <input type="text" id="comment-input-${reel.id}" placeholder="Add a comment...">
+          <button onclick="postComment(${reel.id})">Post</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  setupAutoplay();
+}
+
+function setupAutoplay() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target.querySelector('video');
+      if (!video) return;
+      entry.isIntersecting ? video.play() : video.pause();
+    });
+  }, { threshold: 0.7 });
+  document.querySelectorAll('.reel-card').forEach(card => observer.observe(card));
+}
+
+async function likeReel(reelId, btn) {
+  const res  = await fetch(`/api/reels/${reelId}/like/`, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    credentials: 'include'
+  });
+  const data = await res.json();
+  document.getElementById(`likes-${reelId}`).textContent = data.like_count;
+  const icon  = btn.querySelector('.icon');
+  const liked = btn.classList.toggle('liked');
+  icon.textContent = liked ? '❤️' : '🤍';
+}
+
+function toggleComments(reelId) {
+  const box     = document.getElementById(`comments-${reelId}`);
+  const overlay = document.getElementById(`overlay-${reelId}`);
+  box.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function toggleFollow(btn) {
+  const isFollowing = btn.textContent === 'Following';
+  btn.textContent   = isFollowing ? 'Follow' : 'Following';
+  btn.style.opacity = isFollowing ? '1' : '0.55';
+}
+
+function shareReel(reelId) {
+  const url = `${location.origin}/reels/#reel-${reelId}`;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => alert('Link copied! 🔗'));
+  }
+}
+
+async function postComment(reelId) {
+  const input   = document.getElementById(`comment-input-${reelId}`);
+  const content = input.value.trim();
+  if (!content) return;
+
+  const res = await fetch(`/api/reels/${reelId}/comment/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+    credentials: 'include',
+    body: JSON.stringify({ content })
+  });
+  const comment = await res.json();
+
+  // add comment to list
+  document.getElementById(`comment-list-${reelId}`).innerHTML +=
+    `<div class="comment-item"><strong>${comment.user.username}</strong>: ${comment.content}</div>`;
+  input.value = '';
+
+  // update comment count
+  const countEl = document.getElementById(`comment-count-${reelId}`);
+  if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+}
+
+async function uploadReel() {
+  const video   = document.getElementById('reelVideo').files[0];
+  const caption = document.getElementById('reelCaption').value;
+  if (!video) { alert('Please select a video!'); return; }
+
+  const formData = new FormData();
+  formData.append('video', video);
+  formData.append('caption', caption);
+
+  const res = await fetch('/api/reels/create/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCookie('csrftoken') },
+    credentials: 'include',
+    body: formData
+  });
+  if (res.ok) { alert('Reel uploaded! 🎬'); loadReels(); }
+}
+
+init();
+</script>
+
+{% endblock %}
