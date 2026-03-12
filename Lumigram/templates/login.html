@@ -418,7 +418,7 @@
   // Check if already logged in — redirect to home
   async function checkAuth() {
     try {
-      const r = await fetch('/api/accounts/profile/zain/', { credentials: 'include' });
+      const r = await fetch('/api/accounts/me/', { credentials: 'include' });
       if (r.ok) window.location.href = '/';
     } catch(e) {}
   }
