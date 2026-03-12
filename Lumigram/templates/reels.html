@@ -28,19 +28,24 @@
   }
   .upload-bar button:hover { opacity: 0.85; }
 
-  /* ── Reels container ── */
+  /* ── Reels container ── ✅ KEY FIX: position fixed, full screen */
   .reels-container {
-    height: 100vh;
+    position: fixed;
+    top: 56px;           /* below upload bar */
+    left: 0; right: 0; bottom: 0;
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
     background: #000;
-    padding-top: 56px;
+    scrollbar-width: none;
   }
+  .reels-container::-webkit-scrollbar { display: none; }
 
-  /* ── Single reel card ── */
+  /* ── Single reel card ── ✅ KEY FIX: 100vh so each reel = full screen */
   .reel-card {
-    height: calc(100vh - 56px);
+    height: 100vh;
     scroll-snap-align: start;
+    scroll-snap-stop: always;   /* ✅ never skip a reel */
     position: relative;
     display: flex;
     justify-content: center;
@@ -50,7 +55,9 @@
   }
   .reel-card video {
     height: 100%; max-width: 420px; width: 100%; object-fit: cover;
+    cursor: pointer;   /* ✅ tap to pause/play */
   }
+
   /* bottom gradient */
   .reel-gradient {
     position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
@@ -167,6 +174,19 @@
     background: rgba(0,0,0,0.4);
   }
   .comment-overlay.open { display: block; }
+
+  /* ✅ Pause indicator */
+  .pause-indicator {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 60px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .pause-indicator.show { opacity: 1; }
 </style>
 
 <!-- Upload bar -->
@@ -210,7 +230,10 @@ async function loadReels() {
 
     container.innerHTML += `
     <div class="reel-card" id="reel-${reel.id}">
-      <video src="${reel.video}" loop playsinline></video>
+      <video src="${reel.video}" loop playsinline onclick="togglePlay(this, ${reel.id})"></video>
+
+      <!-- ✅ Tap to pause indicator -->
+      <div class="pause-indicator" id="pause-icon-${reel.id}">⏸</div>
 
       <div class="reel-gradient"></div>
 
@@ -268,15 +291,36 @@ async function loadReels() {
   setupAutoplay();
 }
 
+// ✅ Auto play/pause as user scrolls
 function setupAutoplay() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target.querySelector('video');
       if (!video) return;
-      entry.isIntersecting ? video.play() : video.pause();
+      if (entry.isIntersecting) {
+        video.play();
+      } else {
+        video.pause();
+        video.currentTime = 0;   // ✅ reset when scrolled away
+      }
     });
   }, { threshold: 0.7 });
+
   document.querySelectorAll('.reel-card').forEach(card => observer.observe(card));
+}
+
+// ✅ Tap video to pause/play like Instagram
+function togglePlay(video, reelId) {
+  const icon = document.getElementById(`pause-icon-${reelId}`);
+  if (video.paused) {
+    video.play();
+    icon.textContent = '▶️';
+  } else {
+    video.pause();
+    icon.textContent = '⏸';
+  }
+  icon.classList.add('show');
+  setTimeout(() => icon.classList.remove('show'), 600);
 }
 
 async function likeReel(reelId, btn) {
@@ -325,12 +369,10 @@ async function postComment(reelId) {
   });
   const comment = await res.json();
 
-  // add comment to list
   document.getElementById(`comment-list-${reelId}`).innerHTML +=
     `<div class="comment-item"><strong>${comment.user.username}</strong>: ${comment.content}</div>`;
   input.value = '';
 
-  // update comment count
   const countEl = document.getElementById(`comment-count-${reelId}`);
   if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
 }

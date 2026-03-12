@@ -60,6 +60,7 @@ urlpatterns = [
     path('explore/',                 explore_page,             name='explore'),
     path('user/<str:username>/',     user_profile_page,        name='user_profile'),
     path('posts/<int:post_id>/',     post_detail_page,         name='post_detail'),
+    path('post/<int:post_id>/',  post_detail_page, name='post_detail_alt'),  # ✅ add this
 
     # Profile URLs
     path('profile/',                 profile_page,             name='profile_redirect'),
